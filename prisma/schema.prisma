@@ -1,0 +1,75 @@
+generator client {
+    provider = "prisma-client"
+    output   = "../generated/prisma"
+}
+
+datasource db {
+    provider = "mysql"
+}
+
+model RefreshToken {
+    id        Int      @id @default(autoincrement())
+    token     String   @unique
+    expires   DateTime
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    valid     Boolean  @default(true)
+    
+    user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    Int
+
+    @@index([userId])
+}
+
+model User {
+    id        Int        @id @default(autoincrement())
+    email     String     @unique
+    password  String
+    callsigns Callsign[]
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
+    verified  Boolean    @default(false)
+    emailToken String?    @unique
+    emailTokenExpires DateTime?
+    refreshTokens RefreshToken[]
+}
+
+model Callsign {
+    id           Int            @id @default(autoincrement())
+    callsign     String         @unique
+    operatorName String?
+    
+    licenseClass String?
+    licenseType  String?
+    status       CallsignStatus
+    
+    addressLine1 String?
+    addressLine2 String?
+    city         String?
+    stateProvince String?
+    postalCode   String?
+    country      String
+
+    ituZone      Int?
+
+    regulatoryBody String?
+    
+    gridSquare   String?
+    createdAt    DateTime       @default(now())
+    updatedAt    DateTime       @updatedAt
+
+    userId      Int?
+    user        User?          @relation(fields: [userId], references: [id])
+    
+    @@index([userId])
+    @@index([country])
+    @@index([gridSquare])
+}
+
+enum CallsignStatus {
+    ACTIVE
+    EXPIRED
+    SUSPENDED
+    CANCELLED
+    REVOKED
+}
