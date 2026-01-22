@@ -3,6 +3,37 @@
     import type { OperatorProfile } from '$lib/types';
     import type { PageProps } from './$types';
     import { m } from '$lib/paraglide/messages.js';
+    import { browser } from '$app/environment';
+
+    async function shareProfile() {
+        const url = browser
+            ? `${window.location.origin}/operator/${operator.callsign}`
+            : '';
+
+        const title = `${operator.callsign} — ${operator.name}`;
+        const text = `Check out ${operator.callsign}'s profile`;
+
+        if (browser && navigator.share) {
+            try {
+                await navigator.share({
+                    title,
+                    text,
+                    url
+                });
+                return;
+            } catch (err) {
+                console.debug('share cancelled or failed', err);
+            }
+        }
+
+        try {
+            await navigator.clipboard.writeText(url);
+            alert(m.profile_link_copied());
+        } catch {
+            alert(url);
+        }
+    }
+
 
     let { data }: PageProps = $props();
 
@@ -11,9 +42,16 @@
     let isOwner = $derived(currentUserCallsign === operator.callsign);
     let isEditing = $state(false);
 
-    let mapUrl = $derived(
-        `https://www.openstreetmap.org/export/embed.html?bbox=-2.4172%2C51.3533%2C-2.3172%2C51.4133&layer=mapnik&marker=51.3811%2C-2.3590`
-    );
+    let mapUrl = $derived.by(() => {
+        const addr = operator.address;
+        if (!addr) return null;
+
+        const parts = [addr.street, addr.city, addr.state, addr.zip, addr.country].filter(Boolean);
+
+        const query = encodeURIComponent(parts.join(', '));
+
+        return `https://www.google.com/maps?q=${query}&output=embed`;
+    });
 
     const getStatusColor = (status?: string) => {
         switch (status?.toLowerCase()) {
@@ -121,12 +159,14 @@
             </div>
 
             <div class="flex gap-2">
-                <button
+                <a
+                    href="/contact?callsign={operator.callsign}"
                     class="rounded-lg bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
                 >
                     {m.log_contact()}
-                </button>
+                </a>
                 <button
+                    onclick={shareProfile}
                     class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
                 >
                     {m.share_profile()}
@@ -261,14 +301,28 @@
                                     <p class="mb-2 text-xs font-bold text-slate-400 uppercase">
                                         {m.label_registered_region()}
                                     </p>
+
+                                    {#if operator.address.street}
+                                        <p class="mb-1 text-sm font-medium text-slate-500">
+                                            {operator.address.street}
+                                        </p>
+                                    {/if}
+
                                     <p class="text-lg leading-tight font-bold text-slate-800">
                                         {#if operator.address.city}{operator.address.city},
                                         {/if}
                                         {#if operator.address.state}{operator.address.state}{/if}
                                     </p>
+
                                     <p class="font-medium text-slate-500">
                                         {operator.address.country}
                                     </p>
+
+                                    {#if operator.address.zip}
+                                        <p class="mt-1 text-sm font-medium text-slate-500">
+                                            {operator.address.zip}
+                                        </p>
+                                    {/if}
                                 </div>
 
                                 {#if operator.address.grid}
@@ -282,34 +336,33 @@
                                             >
                                                 {operator.address.grid}
                                             </p>
-                                            <span class="text-xs font-bold text-slate-300 uppercase"
-                                                >IO81wv</span
-                                            >
                                         </div>
                                     </div>
                                 {/if}
                             </div>
 
-                            <div
-                                class="relative h-56 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-inner md:w-80"
-                            >
-                                <iframe
-                                    title="Operator Location Map"
-                                    width="100%"
-                                    height="100%"
-                                    frameborder="0"
-                                    scrolling="no"
-                                    marginheight="0"
-                                    marginwidth="0"
-                                    src={mapUrl}
-                                    class="contrast-[90%] grayscale-[20%] filter"
-                                ></iframe>
+                            {#if mapUrl}
                                 <div
-                                    class="pointer-events-none absolute right-2 bottom-2 rounded border border-slate-200 bg-white/90 px-2 py-1 text-[10px] font-bold text-slate-500 backdrop-blur"
+                                    class="relative h-56 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-inner md:w-80"
                                 >
-                                    {m.map_attribution()}
+                                    <iframe
+                                        title="Operator Location Map"
+                                        width="100%"
+                                        height="100%"
+                                        frameborder="0"
+                                        scrolling="no"
+                                        marginheight="0"
+                                        marginwidth="0"
+                                        src={mapUrl}
+                                        class="contrast-[90%] grayscale-[20%] filter"
+                                    ></iframe>
+                                    <div
+                                        class="pointer-events-none absolute right-2 bottom-2 rounded border border-slate-200 bg-white/90 px-2 py-1 text-[10px] font-bold text-slate-500 backdrop-blur"
+                                    >
+                                        {m.map_attribution()}
+                                    </div>
                                 </div>
-                            </div>
+                            {/if}
                         </div>
                     </section>
                 {/if}
@@ -323,7 +376,8 @@
                     </h3>
                     <ul class="space-y-3">
                         <li>
-                            <button
+                            <a
+                                href="/tools/distance?from={operator.address?.grid}"
                                 class="flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold transition hover:bg-white/10"
                             >
                                 <svg
@@ -340,7 +394,7 @@
                                     />
                                 </svg>
                                 {m.button_calculate_distance()}
-                            </button>
+                            </a>
                         </li>
                     </ul>
                 </div>

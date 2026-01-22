@@ -16,6 +16,8 @@
             if (data?.refreshToken) {
                 await refreshAccessToken();
                 document.cookie = `accessToken=${getAccessToken()}; max-age=3600; path=/`;
+            } else {
+                document.cookie = `accessToken=; max-age=0; path=/`;
             }
         }
     });

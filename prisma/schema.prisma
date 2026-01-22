@@ -63,11 +63,39 @@ model Callsign {
     userId      Int?
     user        User?          @relation(fields: [userId], references: [id])
     views       Int            @default(0)
+
+    qsos        QSO[]          @relation("CallsignToQSO")
     
     @@index([userId])
     @@index([country])
     @@index([gridSquare])
 }
+
+model QSO {
+    id          Int        @id @default(autoincrement())
+    userId      Int
+    timestamp   DateTime   @default(now())  // when the contact happened
+    callsignId  Int         // the local/our callsign
+    contactCallsign String  // the callsign you contacted
+    contactGrid   String?     // grid square of the contacted station
+    mode        String?     // e.g., SSB, CW, FT8
+    frequency   Float?      // in MHz
+    band        String?     // e.g., 20m, 40m
+    rstSent     String?     // signal report sent
+    rstReceived String?     // signal report received
+    qslSent     Boolean     @default(false)
+    qslReceived Boolean     @default(false)
+    notes       String?     // optional notes
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+
+    callsign    Callsign    @relation("CallsignToQSO", fields: [callsignId], references: [id])
+
+    @@index([callsignId])
+    @@index([contactCallsign])
+    @@index([timestamp])
+}
+
 
 enum CallsignStatus {
     ACTIVE

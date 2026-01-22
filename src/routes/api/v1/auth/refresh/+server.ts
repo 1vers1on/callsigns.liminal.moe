@@ -14,7 +14,7 @@ export async function POST({ cookies }) {
             path: '/',
             sameSite: 'lax',
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 60 * 60 * 24 * 30 // 30 days
+            maxAge: 60 * 60 * 24 * 30
         });
         return json({ token });
     } catch (err) {

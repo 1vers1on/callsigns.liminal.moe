@@ -4,6 +4,7 @@
     import { enhance } from '$app/forms';
     import type { ActionData } from './$types';
     import { m } from '$lib/paraglide/messages.js';
+    import { Turnstile } from 'svelte-turnstile';
 
     let { form }: { form: ActionData } = $props();
 
@@ -12,6 +13,7 @@
     let password = $state('');
     let confirmPassword = $state('');
     let isLoading = $state(false);
+    let turnstileToken = $state('');
 
     let isCallsignValid = $derived(callsign.length > 0 ? validateHamCallsign(callsign) : null);
     let isPasswordLongEnough = $derived(password.length >= 6);
@@ -24,6 +26,7 @@
             isPasswordLongEnough &&
             passwordsMatch &&
             acceptedTerms &&
+            turnstileToken.length > 0 &&
             !isLoading
     );
 
@@ -178,6 +181,19 @@
                         </a>
                     </label>
                 </div>
+
+                <div class="flex justify-center">
+                    <Turnstile
+                        theme="light"
+                        siteKey="1x00000000000000000000AA"
+                        on:callback={(e) => {
+                            console.log('Turnstile token:', e.detail.token);
+                            turnstileToken = e.detail.token;
+                        }}
+                    />
+                </div>
+
+                <input type="hidden" name="cf-turnstile-response" value={turnstileToken} />
 
                 <button
                     type="submit"

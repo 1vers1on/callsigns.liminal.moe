@@ -30,7 +30,7 @@ async function createRefreshToken(userId: number) {
         data: {
             userId,
             token,
-            expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+            expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
         }
     });
 
@@ -93,15 +93,40 @@ async function register(email: string, password: string, callsign: string) {
             password: hashedPassword
         }
     });
+    try {
+        await prisma.callsign.create({
+            data: {
+                callsign,
+                userId: user.id,
+                status: 'ACTIVE',
+                country: ''
+            }
+        });
+    } catch (err) {
+        try {
+            const existing = await prisma.callsign.findUnique({
+                where: { callsign }
+            });
 
-    await prisma.callsign.create({
-        data: {
-            callsign,
-            userId: user.id,
-            status: 'ACTIVE',
-            country: ''
+            if (existing && existing.userId == null) {
+                await prisma.callsign.update({
+                    where: { id: existing.id },
+                    data: {
+                        userId: user.id,
+                        status: 'ACTIVE',
+                        country: existing.country ?? ''
+                    }
+                });
+            } else {
+                console.error('Failed to create callsign for new user:', err);
+                throw err;
+            }
+        } catch (updateErr) {
+            console.error('Error attaching existing callsign to user:', updateErr);
+            throw updateErr;
         }
-    });
+
+    }
 
     sendVerifyEmail(email);
 }

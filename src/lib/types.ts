@@ -10,6 +10,8 @@ export interface OperatorProfile {
         city?: string;
         state?: string;
         country: string;
+        zip?: string;
+        street?: string;
         grid?: string;
     };
     identifiers?: {

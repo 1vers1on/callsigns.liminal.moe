@@ -1,11 +1,8 @@
-import 'dotenv/config';
+import { PrismaClient } from '../generated/prisma/client';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
-import { PrismaClient } from '../../../generated/prisma/client';
 
-
-declare global {
-    var prisma: PrismaClient | undefined;
-}
+import dotenv from 'dotenv';
+dotenv.config();
 
 const createPrismaClient = () => {
     const adapter = new PrismaMariaDb({
@@ -19,11 +16,16 @@ const createPrismaClient = () => {
 
     return new PrismaClient({
         adapter,
-        log: ['query', 'info', 'warn', 'error']
+        log: []
     });
 };
 
-export const prisma = globalThis.prisma || createPrismaClient();
+declare global {
+    // eslint-disable-next-line no-var
+    var prisma: ReturnType<typeof createPrismaClient> | undefined;
+}
+
+export const prisma = globalThis.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== 'production') {
     globalThis.prisma = prisma;

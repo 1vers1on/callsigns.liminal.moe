@@ -34,20 +34,20 @@
                     {m.footer_resources_heading()}
                 </h3>
                 <ul class="mt-4 space-y-2">
-                    <li>
+                    <!-- <li>
                         <a
                             href="/about"
                             class="text-sm text-slate-600 transition-colors hover:text-blue-600"
                         >
                             {m.footer_link_about()}
                         </a>
-                    </li>
+                    </li> -->
                     <li>
                         <a
-                            href="/solar"
+                            href="/credits"
                             class="text-sm text-slate-600 transition-colors hover:text-blue-600"
                         >
-                            {m.solar_propagation_title()}
+                            {m.footer_link_credits()}
                         </a>
                     </li>
                 </ul>
