@@ -29,8 +29,10 @@ model User {
     createdAt DateTime   @default(now())
     updatedAt DateTime   @updatedAt
     verified  Boolean    @default(false)
+    admin     Boolean    @default(false)
     emailToken String?    @unique
     emailTokenExpires DateTime?
+    emailVerified Boolean   @default(false)
     refreshTokens RefreshToken[]
 }
 
@@ -60,6 +62,7 @@ model Callsign {
 
     userId      Int?
     user        User?          @relation(fields: [userId], references: [id])
+    views       Int            @default(0)
     
     @@index([userId])
     @@index([country])

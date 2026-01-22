@@ -3,8 +3,22 @@
     import { locales, localizeHref } from '$lib/paraglide/runtime';
     import './layout.css';
     import favicon from '$lib/assets/favicon.svg';
+    import { onMount } from 'svelte';
+    import { refreshAccessToken } from '$lib/clientAuth';
+    import { getAccessToken } from '$lib/storage.svelte';
+    import type { PageProps } from './$types';
 
-    let { children } = $props();
+    let { children, data } = $props();
+
+    onMount(async () => {
+        if (!getAccessToken()) {
+            console.log('No access token found, refreshing...');
+            if (data?.refreshToken) {
+                await refreshAccessToken();
+                document.cookie = `accessToken=${getAccessToken()}; max-age=3600; path=/`;
+            }
+        }
+    });
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>

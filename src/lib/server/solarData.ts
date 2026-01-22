@@ -40,20 +40,20 @@ function parseHamQSLXml(xml: string): SolarData {
 
     const bandsMap: Record<string, { day: string; night: string }> = {};
     const bandRegex = /<band name="([^"]+)" time="([^"]+)">([^<]+)<\/band>/g;
-    
+
     let match;
     while ((match = bandRegex.exec(xml)) !== null) {
         const [, name, time, value] = match;
-        
+
         if (!bandsMap[name]) {
             bandsMap[name] = { day: 'Unknown', night: 'Unknown' };
         }
-        
+
         if (time.toLowerCase() === 'day') bandsMap[name].day = value;
         if (time.toLowerCase() === 'night') bandsMap[name].night = value;
     }
 
-    const conditions: BandCondition[] = Object.keys(bandsMap).map(bandName => ({
+    const conditions: BandCondition[] = Object.keys(bandsMap).map((bandName) => ({
         band: bandName,
         day: bandsMap[bandName].day,
         night: bandsMap[bandName].night
@@ -71,20 +71,19 @@ function parseHamQSLXml(xml: string): SolarData {
 }
 
 async function fetchFromSource(): Promise<SolarData> {
-    console.log('📡 Fetching live solar data from HamQSL (N0NBH)...');
-    
+    console.log('Fetching live solar data from HamQSL (N0NBH)...');
+
     try {
         const response = await fetch('https://www.hamqsl.com/solarxml.php');
-        
+
         if (!response.ok) {
             throw new Error(`HTTP Error: ${response.status}`);
         }
 
         const xmlText = await response.text();
         return parseHamQSLXml(xmlText);
-
     } catch (error) {
-        console.error("Error fetching HamQSL data:", error);
+        console.error('Error fetching HamQSL data:', error);
         throw error;
     }
 }
@@ -93,7 +92,9 @@ export async function updateSolarData() {
     try {
         const newData = await fetchFromSource();
         currentSolarData = newData;
-        console.log(`Solar data updated: SFI=${newData.sfi} K=${newData.kIndex} Conditions=${newData.conditions.length} bands`);
+        console.log(
+            `Solar data updated: SFI=${newData.sfi} K=${newData.kIndex} Conditions=${newData.conditions.length} bands`
+        );
     } catch (err) {
         console.error('Failed to update solar data:', err);
     }
@@ -110,9 +111,12 @@ export function startBackgroundUpdate(intervalMinutes: number = 60) {
 
     updateSolarData();
 
-    intervalId = setInterval(() => {
-        updateSolarData();
-    }, intervalMinutes * 60 * 1000);
-    
+    intervalId = setInterval(
+        () => {
+            updateSolarData();
+        },
+        intervalMinutes * 60 * 1000
+    );
+
     console.log(`Solar data background poller started (${intervalMinutes}m interval)`);
 }
