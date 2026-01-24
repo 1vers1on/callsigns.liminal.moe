@@ -11,15 +11,15 @@ function latLonToGrid(lat: number, lon: number): string {
 
     const fieldLat = Math.floor(adjLat / 10);
     const fieldLon = Math.floor(adjLon / 20);
-    
+
     const squareLat = Math.floor(adjLat % 10);
     const squareLon = Math.floor((adjLon / 2) % 10);
 
-    const subLat = Math.floor((adjLat - (fieldLat * 10) - squareLat) * 24);
-    const subLon = Math.floor((adjLon - (fieldLon * 20) - (squareLon * 2)) * 24);
+    const subLat = Math.floor((adjLat - fieldLat * 10 - squareLat) * 24);
+    const subLon = Math.floor((adjLon - fieldLon * 20 - squareLon * 2) * 24);
 
     const A = 'ABCDEFGHIJKLMNOPQR';
-    
+
     return (
         A[fieldLon] +
         A[fieldLat] +
@@ -49,7 +49,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
                 const query = encodeURIComponent(addressParts.join(', '));
                 const url = `https://api.opencagedata.com/geocode/v1/json?q=${query}&key=${OPENCAGE_KEY}&limit=1`;
                 console.log('Geocoding URL:', url);
-                
+
                 const res = await fetch(url);
                 const data = await res.json();
 
@@ -70,28 +70,37 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 
     const mapStatus = (s: typeof record.status) => {
         switch (s) {
-            case 'ACTIVE': return 'Active';
-            case 'EXPIRED': return 'Expired';
-            case 'CANCELLED': return 'Cancelled';
-            default: return 'Pending';
+            case 'ACTIVE':
+                return 'Active';
+            case 'EXPIRED':
+                return 'Expired';
+            case 'CANCELLED':
+                return 'Cancelled';
+            default:
+                return 'Pending';
         }
     };
 
     const mapClass = (c: typeof record.licenseClass) => {
         switch (c) {
-            case 'T': return 'Technician';
-            case 'G': return 'General';
-            case 'E': return 'Extra';
-            default: return undefined;
+            case 'T':
+                return 'Technician';
+            case 'G':
+                return 'General';
+            case 'E':
+                return 'Extra';
+            default:
+                return undefined;
         }
     };
 
     const operator: OperatorProfile = {
         callsign: record.callsign,
         name: record.operatorName ?? '',
-        countryCode: record.country && record.country.length >= 2 
-            ? record.country.substring(0, 2).toUpperCase() 
-            : '',
+        countryCode:
+            record.country && record.country.length >= 2
+                ? record.country.substring(0, 2).toUpperCase()
+                : '',
         class: mapClass(record.licenseClass),
         status: mapStatus(record.status),
         joined: record.createdAt ? record.createdAt.toISOString().split('T')[0] : undefined,
@@ -101,14 +110,14 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
             state: record.stateProvince ?? undefined,
             zip: record.postalCode?.substring(0, 5) ?? undefined,
             street: record.addressLine1 ?? undefined,
-            grid: record.gridSquare ?? undefined,
+            grid: record.gridSquare ?? undefined
         },
         identifiers: {},
         nickname: undefined,
         birthday: undefined,
         gender: undefined,
         age: undefined,
-        bio: undefined,
+        bio: undefined
     };
 
     return { operator };

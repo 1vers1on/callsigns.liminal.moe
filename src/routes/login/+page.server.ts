@@ -1,10 +1,7 @@
 import type { Actions } from './$types';
-import { prisma } from '$lib/server/prisma';
 import { login } from '$lib/server/auth';
-import { json, fail, redirect } from '@sveltejs/kit';
-import { signAccessToken, createRefreshToken } from '$lib/server/auth';
 import { checkRateLimit, resetRateLimit } from '$lib/server/rateLimit';
-import bcrypt from 'bcrypt';
+import { fail, redirect } from '@sveltejs/kit';
 
 const LOGIN_RATE_LIMIT = {
     maxAttempts: 5,
@@ -27,18 +24,18 @@ export const actions: Actions = {
         const rateLimitKey = `login:${clientIp}:${email}`;
 
         const rateLimit = await checkRateLimit(rateLimitKey, LOGIN_RATE_LIMIT);
-        
+
         if (!rateLimit.success) {
             const waitMinutes = Math.ceil((rateLimit.resetTime - Date.now()) / 60000);
-            
+
             if (rateLimit.blocked) {
-                return fail(429, { 
+                return fail(429, {
                     error: `Too many login attempts. Account temporarily locked. Try again in ${waitMinutes} minutes.`,
                     resetTime: rateLimit.resetTime
                 });
             }
-            
-            return fail(429, { 
+
+            return fail(429, {
                 error: `Rate limit exceeded. Try again in ${waitMinutes} minutes.`,
                 resetTime: rateLimit.resetTime
             });
@@ -46,9 +43,9 @@ export const actions: Actions = {
 
         try {
             const { refreshToken } = await login(email as string, password as string);
-            
+
             await resetRateLimit(rateLimitKey);
-            
+
             cookies.set('refreshToken', refreshToken, {
                 httpOnly: true,
                 path: '/',
@@ -67,7 +64,7 @@ export const actions: Actions = {
                 }
 
                 if (err.message === 'Invalid password') {
-                    return fail(401, { 
+                    return fail(401, {
                         error: 'Invalid password',
                         remainingAttempts: rateLimit.remainingAttempts - 1
                     });

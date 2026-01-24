@@ -49,7 +49,7 @@ export async function checkRateLimit(
     const multi = client.multi();
     multi.incr(windowKey);
     multi.pexpire(windowKey, config.windowMs);
-    
+
     const results = await multi.exec();
     const attempts = results?.[0]?.[1] as number;
 
@@ -60,7 +60,7 @@ export async function checkRateLimit(
         if (config.blockDurationMs) {
             await client.set(blockKey, '1', 'PX', config.blockDurationMs);
         }
-        
+
         return {
             success: false,
             remainingAttempts: 0,
@@ -106,7 +106,7 @@ export async function getRateLimitStatus(
     const attempts = await client.get(windowKey);
     const currentAttempts = attempts ? parseInt(attempts) : 0;
     const remainingAttempts = Math.max(0, config.maxAttempts - currentAttempts);
-    
+
     const ttl = await client.pttl(windowKey);
     const resetTime = ttl > 0 ? now + ttl : now + config.windowMs;
 

@@ -1,13 +1,23 @@
 import { json, error } from '@sveltejs/kit';
-import { getUserFromAccessToken } from '$lib/server/auth';
+import { getUserFromAccessToken, verifyHttpAuthorizationHeader } from '$lib/server/auth';
 import { prisma } from '$lib/server/prisma';
 
-export async function GET({ cookies }) {
-    const accessToken = cookies.get('accessToken');
-    if (!accessToken) throw error(401, 'Unauthorized');
+async function authenticateRequest(request: Request) {
+    const authorizationHeader = request.headers.get('Authorization');
+    if (!authorizationHeader) {
+        throw error(401, 'Unauthorized');
+    }
 
-    const user = await getUserFromAccessToken(accessToken);
-    if (!user) throw error(401, 'Unauthorized');
+    const payload = await verifyHttpAuthorizationHeader(authorizationHeader);
+    if (!payload?.valid || !payload.user) {
+        throw error(401, 'Unauthorized');
+    }
+
+    return payload.user;
+}
+
+export async function GET({ request }) {
+    const user = await authenticateRequest(request);
 
     try {
         const qsos = await prisma.qSO.findMany({
@@ -21,28 +31,18 @@ export async function GET({ cookies }) {
     }
 }
 
-export async function POST({ request, cookies }) {
+export async function POST({ request }) {
+    const user = await authenticateRequest(request);
     const body = await request.json();
-    let accessToken = cookies.get('accessToken');
-    if (!accessToken) {
-        accessToken = body?.accessToken;
-    }
-
-    if (!accessToken) {
-        throw error(401, 'Unauthorized');
-    }
-
-    const user = await getUserFromAccessToken(accessToken);
-    if (!user) {
-        throw error(401, 'Unauthorized');
-    }
-
 
     if (!body?.contactCallsign) {
         throw error(400, 'Missing contactCallsign');
     }
 
-    const callsignRecord = await prisma.callsign.findFirst({ where: { userId: user.id } });
+    const callsignRecord = await prisma.callsign.findFirst({ 
+        where: { userId: user.id } 
+    });
+    
     if (!callsignRecord) {
         throw error(400, 'User has no callsign attached');
     }
@@ -73,25 +73,30 @@ export async function POST({ request, cookies }) {
     }
 }
 
-export async function PUT({ request, cookies }) {
+export async function PUT({ request }) {
+    const user = await authenticateRequest(request);
     const body = await request.json();
-    let accessToken = cookies.get('accessToken') ?? body?.accessToken;
 
-    if (!accessToken) throw error(401, 'Unauthorized');
-
-    const user = await getUserFromAccessToken(accessToken);
-    if (!user) throw error(401, 'Unauthorized');
-
-    if (body?.id === undefined || body?.id === null) throw error(400, 'Missing QSO id');
-    if (!body?.contactCallsign) throw error(400, 'Missing contactCallsign');
+    if (body?.id === undefined || body?.id === null) {
+        throw error(400, 'Missing QSO id');
+    }
+    
+    if (!body?.contactCallsign) {
+        throw error(400, 'Missing contactCallsign');
+    }
 
     const qsoId = Number(body.id);
-    if (!Number.isInteger(qsoId)) throw error(400, 'Invalid QSO id');
+    if (!Number.isInteger(qsoId)) {
+        throw error(400, 'Invalid QSO id');
+    }
 
     const existing = await prisma.qSO.findFirst({
         where: { id: qsoId, userId: user.id }
     });
-    if (!existing) throw error(404, 'QSO not found');
+    
+    if (!existing) {
+        throw error(404, 'QSO not found');
+    }
 
     try {
         const updated = await prisma.qSO.update({
@@ -118,24 +123,26 @@ export async function PUT({ request, cookies }) {
     }
 }
 
-export async function DELETE({ request, cookies }) {
+export async function DELETE({ request }) {
+    const user = await authenticateRequest(request);
     const body = await request.json();
-    let accessToken = cookies.get('accessToken') ?? body?.accessToken;
 
-    if (!accessToken) throw error(401, 'Unauthorized');
-
-    const user = await getUserFromAccessToken(accessToken);
-    if (!user) throw error(401, 'Unauthorized');
-
-    if (body?.id === undefined || body?.id === null) throw error(400, 'Missing QSO id');
+    if (body?.id === undefined || body?.id === null) {
+        throw error(400, 'Missing QSO id');
+    }
 
     const qsoId = Number(body.id);
-    if (!Number.isInteger(qsoId)) throw error(400, 'Invalid QSO id');
+    if (!Number.isInteger(qsoId)) {
+        throw error(400, 'Invalid QSO id');
+    }
 
     const existing = await prisma.qSO.findFirst({
         where: { id: qsoId, userId: user.id }
     });
-    if (!existing) throw error(404, 'QSO not found');
+    
+    if (!existing) {
+        throw error(404, 'QSO not found');
+    }
 
     try {
         await prisma.qSO.delete({
@@ -149,19 +156,10 @@ export async function DELETE({ request, cookies }) {
     }
 }
 
-export async function PATCH({ request, cookies }) {
+export async function PATCH({ request }) {
     try {
+        const user = await authenticateRequest(request);
         const body = await request.json();
-        let accessToken = cookies.get('accessToken') ?? body?.accessToken;
-        
-        if (!accessToken) {
-            throw error(401, 'Unauthorized');
-        }
-
-        const user = await getUserFromAccessToken(accessToken);
-        if (!user) {
-            throw error(401, 'Unauthorized');
-        }
 
         if (body?.id === undefined || body?.id === null) {
             throw error(400, 'Missing QSO id');
@@ -236,12 +234,11 @@ export async function PATCH({ request, cookies }) {
         });
 
         return json({ success: true, qso: updated });
-
     } catch (err) {
         if (typeof err === 'object' && err !== null && 'status' in err) {
             throw err;
         }
-        
+
         console.error('Error patching QSO:', err);
         throw error(500, 'Failed to patch QSO');
     }

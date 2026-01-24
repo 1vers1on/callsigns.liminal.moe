@@ -19,8 +19,8 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
         });
     }
 
-    const isOwner = callsigns.some(c => c.callsign.toUpperCase() === 'KR4FNZ');
-    if (!user || !user.admin && !isOwner) {
+    const isOwner = callsigns.some((c) => c.callsign.toUpperCase() === 'KR4FNZ');
+    if (!user || (!user.admin && !isOwner)) {
         throw error(403, 'Forbidden');
     }
 

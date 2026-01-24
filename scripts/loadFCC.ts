@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { ArgumentParser } from "argparse";
-import { prisma } from "./prisma";
+import { ArgumentParser } from 'argparse';
+import { prisma } from './prisma';
 import * as cliProgress from 'cli-progress';
 
 interface AMDataRecord {
@@ -164,7 +164,7 @@ function loadAMData(amFilePath: string): AMDataRecord[] {
             vanityRelationship: fields[14],
             previousCallSign: fields[15],
             previousOperatorClass: fields[16],
-            trusteeName: fields[17],
+            trusteeName: fields[17]
         };
         records.push(record);
     }
@@ -208,7 +208,7 @@ function loadENData(enFilePath: string): ENDataRecord[] {
             statusDate: fields[26],
             licCategoryCode: fields[27],
             linkedLicenseId: Number(fields[28]),
-            linkedCallsign: fields[29],
+            linkedCallsign: fields[29]
         };
         records.push(record);
     }
@@ -281,7 +281,7 @@ function loadHDData(hdFilePath: string): HDDataRecord[] {
             eligibilityCert900: fields[55],
             transitionPlanCert900: fields[56],
             returnSpectrumCert900: fields[57],
-            paymentCert900: fields[58],
+            paymentCert900: fields[58]
         };
         records.push(record);
     }
@@ -294,10 +294,10 @@ function combineFCCData(
     hdRecords: HDDataRecord[]
 ): CombinedCallsignData[] {
     const combinedData: CombinedCallsignData[] = [];
-    const enMap = new Map(enRecords.map(record => [record.callSign, record]));
-    const hdMap = new Map(hdRecords.map(record => [record.callSign, record]));
-    const amMap = new Map(amRecords.map(record => [record.callSign, record]));
-    
+    const enMap = new Map(enRecords.map((record) => [record.callSign, record]));
+    const hdMap = new Map(hdRecords.map((record) => [record.callSign, record]));
+    const amMap = new Map(amRecords.map((record) => [record.callSign, record]));
+
     for (const hdRecord of hdRecords) {
         const enRecord = enMap.get(hdRecord.callSign);
         const amRecord = amMap.get(hdRecord.callSign);
@@ -347,7 +347,9 @@ function combineFCCData(
             addressLine2 = enRecord.attentionLine.trim();
         }
 
-        const postalCode = enRecord.zipCode ? enRecord.zipCode.replace(/[^0-9-]/g, '').substring(0, 10) : undefined;
+        const postalCode = enRecord.zipCode
+            ? enRecord.zipCode.replace(/[^0-9-]/g, '').substring(0, 10)
+            : undefined;
 
         let ituZone: number | undefined;
         if (amRecord?.regionCode) {
@@ -393,30 +395,29 @@ async function loadToDatabase(data: CombinedCallsignData[]) {
     try {
         for (let i = 0; i < data.length; i += CHUNK_SIZE) {
             const chunk = data.slice(i, i + CHUNK_SIZE);
-            
+
             try {
                 const result = await prisma.callsign.createMany({
                     data: chunk,
-                    skipDuplicates: true,
+                    skipDuplicates: true
                 });
-                
+
                 totalInserted += result.count;
                 totalSkipped += chunk.length - result.count;
-                
-                progress.update(i + chunk.length);                  
+
+                progress.update(i + chunk.length);
             } catch (chunkError) {
                 console.error(`Error inserting chunk starting at index ${i}:`, chunkError);
                 progress.update(i + chunk.length);
             }
         }
-        
+
         console.log(`\nDatabase insertion complete!`);
         console.log(`Total records processed: ${data.length}`);
         console.log(`Successfully inserted: ${totalInserted}`);
         console.log(`Skipped (duplicates): ${totalSkipped}`);
-        
     } catch (error) {
-        console.error("Error during database insertion:", error);
+        console.error('Error during database insertion:', error);
         throw error;
     } finally {
         progress.stop();
@@ -426,38 +427,38 @@ async function loadToDatabase(data: CombinedCallsignData[]) {
 
 async function main() {
     const parser = new ArgumentParser({
-        description: "FCC Callsign Data Combiner and Database Loader",
+        description: 'FCC Callsign Data Combiner and Database Loader'
     });
-    parser.add_argument("-a", "--amfile", { help: "Path to the AM file", required: true });
-    parser.add_argument("-e", "--enfile", { help: "Path to the EN file", required: true });
-    parser.add_argument("-d", "--hdfile", { help: "Path to the HD file", required: true });
-    parser.add_argument("--db", {
-        help: "Load data into database (requires DATABASE_URL env var)",
-        action: "store_true"
+    parser.add_argument('-a', '--amfile', { help: 'Path to the AM file', required: true });
+    parser.add_argument('-e', '--enfile', { help: 'Path to the EN file', required: true });
+    parser.add_argument('-d', '--hdfile', { help: 'Path to the HD file', required: true });
+    parser.add_argument('--db', {
+        help: 'Load data into database (requires DATABASE_URL env var)',
+        action: 'store_true'
     });
-    
+
     const args = parser.parse_args();
 
     try {
-        console.log("Loading FCC data files...");
+        console.log('Loading FCC data files...');
         const amRecords = loadAMData(args.amfile);
         const enRecords = loadENData(args.enfile);
         const hdRecords = loadHDData(args.hdfile);
-        
+
         console.log(`Loaded ${amRecords.length} AM records`);
         console.log(`Loaded ${enRecords.length} EN records`);
         console.log(`Loaded ${hdRecords.length} HD records`);
-        
-        console.log("Combining data...");
+
+        console.log('Combining data...');
         const combinedData = combineFCCData(amRecords, enRecords, hdRecords);
         console.log(`Combined ${combinedData.length} callsign records`);
-        
+
         if (args.db) {
-            console.log("Loading data into Prisma database...");
+            console.log('Loading data into Prisma database...');
             await loadToDatabase(combinedData);
         }
     } catch (error) {
-        console.error("Error processing FCC data:", error);
+        console.error('Error processing FCC data:', error);
         process.exit(1);
     }
 }

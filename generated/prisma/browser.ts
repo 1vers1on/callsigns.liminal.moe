@@ -28,6 +28,11 @@ export type RefreshToken = Prisma.RefreshTokenModel
  */
 export type User = Prisma.UserModel
 /**
+ * Model ApiKey
+ * 
+ */
+export type ApiKey = Prisma.ApiKeyModel
+/**
  * Model Callsign
  * 
  */

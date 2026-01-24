@@ -14,6 +14,33 @@
 
     let recentSearches = ['W1AW', 'KR4IYD', 'N0CALL', 'KR4FNZ'];
 
+    const tools = [
+        {
+            name: 'Distance Calculator',
+            desc: 'Calculate the distance and bearing between two maidenhead grid squares.',
+            icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z',
+            link: '/tools/distance',
+            color: 'text-blue-600',
+            bg: 'bg-blue-50'
+        },
+        {
+            name: 'Yagi Maker',
+            desc: 'Calculate the dimensions for a Yagi antenna based on frequency and design parameters.',
+            icon: 'M2 12h18M5 7v10M12 5v14M19 7v10',
+            link: '/tools/antennas/yagi',
+            color: 'text-indigo-600',
+            bg: 'bg-indigo-50'
+        },
+        {
+            name: 'Dipole Maker',
+            desc: 'Calculate the dimensions for a dipole antenna based on frequency and design parameters.',
+            icon: 'M3 10h8m2 0h8 M11 10a1 1 0 102 0 1 1 0 10-2 0 M12 11v7',
+            link: '/tools/antennas/dipole',
+            color: 'text-purple-600',
+            bg: 'bg-purple-50'
+        },
+    ];
+
     let hfOverall = $derived(() => {
         const sfi = solarData.sfi;
         const k = solarData.kIndex;
@@ -149,6 +176,53 @@
         </section>
 
         <hr class="my-12 border-slate-200" />
+
+        <section class="mb-12">
+            <h2 class="mb-6 flex items-center gap-2 text-lg font-bold text-slate-800">
+                <svg
+                    class="h-5 w-5 text-blue-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
+                    />
+                </svg>
+                {m.radio_tools_title()}
+            </h2>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {#each tools as tool}
+                    <button
+                        onclick={() => goto(tool.link)}
+                        class="flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-left transition-all hover:border-blue-300 hover:shadow-md active:scale-[0.98]"
+                    >
+                        <div class="rounded-xl {tool.bg} {tool.color} p-3">
+                            <svg
+                                class="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d={tool.icon}
+                                />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-900">{tool.name}</h3>
+                            <p class="text-sm text-slate-500">{tool.desc}</p>
+                        </div>
+                    </button>
+                {/each}
+            </div>
+        </section>
 
         <section class="overflow-hidden rounded-2xl bg-slate-900 shadow-md">
             <div class="flex flex-col justify-between gap-4 p-6 pb-0 md:flex-row md:items-center">

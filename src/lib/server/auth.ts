@@ -1,6 +1,6 @@
 import { prisma } from '$lib/server/prisma';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
+import argon2 from "argon2";
 import { randomBytes, createHash } from 'crypto';
 import { Resend } from 'resend';
 import { error } from 'console';
@@ -85,7 +85,7 @@ async function refresh(refreshToken: string) {
 }
 
 async function register(email: string, password: string, callsign: string) {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await argon2.hash(password);
 
     const user = await prisma.user.create({
         data: {
@@ -125,7 +125,6 @@ async function register(email: string, password: string, callsign: string) {
             console.error('Error attaching existing callsign to user:', updateErr);
             throw updateErr;
         }
-
     }
 
     sendVerifyEmail(email);
@@ -171,7 +170,7 @@ async function login(email: string, password: string) {
         throw new Error('User not found');
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = await argon2.verify(user.password, password);
     if (!isValidPassword) {
         throw new Error('Invalid password');
     }
@@ -283,6 +282,65 @@ async function logout(refreshToken: string) {
     });
 }
 
+async function verifyHttpAuthorizationHeader(authHeader: string) {
+    if (!authHeader || !(authHeader.startsWith('Bearer ') || authHeader.startsWith('ApiKey '))) {
+        throw new Error('Invalid authorization header');
+    }
+
+    const scheme = authHeader.split(' ')[0];
+    const token = authHeader.split(' ')[1];
+
+    if (scheme === 'Bearer') {
+        const payload = verifyAccessToken(token);
+        if (!payload) {
+            return { valid: false };
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: payload.id }
+        });
+        
+        if (!user) {
+            return { valid: false };
+        }
+
+        return { valid: true, user };
+    } else if (scheme === 'ApiKey') {
+        const prefix = token.slice(0, 8);
+        const candidates = await prisma.apiKey.findMany({
+            where: { keyPrefix: prefix }
+        });
+
+        for (const keyRecord of candidates) {
+            if (await argon2.verify(keyRecord.keyHash, token)) {
+                const user = await prisma.user.findUnique({ where: { id: keyRecord.userId } });
+                return { valid: true, user, apiKey: keyRecord };
+            }
+        }
+
+        return { valid: false };
+    }
+}
+
+async function issueApiKey(userId: number, label: string) {
+    const apiKey = `hlk_${randomBytes(32).toString('hex')}`;
+    
+    const keyHash = await argon2.hash(apiKey);
+    
+    const keyPrefix = apiKey.slice(0, 8);
+    
+    await prisma.apiKey.create({
+        data: {
+            userId,
+            label,
+            keyHash,
+            keyPrefix
+        }
+    });
+    
+    return apiKey;
+}
+
 export {
     signAccessToken,
     createRefreshToken,
@@ -291,5 +349,7 @@ export {
     verifyAccessToken,
     getUserFromAccessToken,
     login,
-    logout
+    logout,
+    verifyHttpAuthorizationHeader,
+    issueApiKey
 };
