@@ -341,6 +341,34 @@ async function issueApiKey(userId: number, label: string) {
     return apiKey;
 }
 
+async function revokeApiKey(userId: number, apiKeyId: number) {
+    const keyRecord = await prisma.apiKey.findUnique({
+        where: { id: apiKeyId }
+    });
+
+    if (!keyRecord || keyRecord.userId !== userId) {
+        throw new Error('API key not found or does not belong to user');
+    }
+
+    await prisma.apiKey.delete({
+        where: { id: apiKeyId }
+    });
+}
+
+async function listApiKeys(userId: number) {
+    const keys = await prisma.apiKey.findMany({
+        where: { userId },
+        select: {
+            id: true,
+            label: true,
+            keyPrefix: true,
+            createdAt: true
+        }
+    });
+
+    return keys;
+}
+
 export {
     signAccessToken,
     createRefreshToken,
@@ -351,5 +379,7 @@ export {
     login,
     logout,
     verifyHttpAuthorizationHeader,
-    issueApiKey
+    issueApiKey,
+    revokeApiKey,
+    listApiKeys
 };

@@ -22,7 +22,6 @@
         //     links: { github: 'https://github.com' }
         // }
     ];
-    // -----------------------------------
 
     function getLinkIcon(type: string) {
         if (type === 'github')

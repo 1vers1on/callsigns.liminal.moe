@@ -3,6 +3,7 @@
     import Footer from '$lib/components/footer.svelte';
     import AntennaViewer from '$lib/components/AntennaVisualizer.svelte';
     import type { AntennaDesign, AntennaElement } from '$lib/components/AntennaVisualizer.svelte';
+    import * as m from '$lib/paraglide/messages.js';
 
     let frequency = $state(14.175);
     let velocityFactor = $state(0.95);
@@ -24,7 +25,7 @@
             type: 'wire',
             points: [{x: -0.02, y: 0}, {x: 0.02, y: 0}],
             isDriven: true,
-            group: 'Feed',
+            group: m.group_feed(),
             color: 'transparent'
         };
 
@@ -32,22 +33,22 @@
             id: 'left',
             type: 'wire',
             points: [{x: -halfLen, y: 0}, {x: -gap, y: 0}],
-            label: 'Left Element',
+            label: m.element_left(),
             showDimensions: true,
-            group: 'Radiator'
+            group: m.group_radiator()
         };
 
         const rightLeg: AntennaElement = {
             id: 'right',
             type: 'wire',
             points: [{x: gap, y: 0}, {x: halfLen, y: 0}],
-            label: 'Right Element',
+            label: m.element_right(),
             showDimensions: true,
-            group: 'Radiator'
+            group: m.group_radiator()
         };
 
         return {
-            name: 'Half-Wave Dipole',
+            name: m.design_name(),
             frequency: frequency,
             feedGap: 10,
             elements: [leftLeg, feedElement, rightLeg]
@@ -66,7 +67,7 @@
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
-                Back To Frontpage
+                {m.back_home()}
             </a>
         </nav>
 
@@ -77,10 +78,10 @@
                 </svg>
             </div>
             <h1 class="text-4xl font-black tracking-tight text-slate-900">
-                Dipole Calculator
+                {m.dipole_title()}
             </h1>
             <p class="mt-2 text-lg font-medium text-slate-500">
-                Design a resonant half-wave dipole for any frequency.
+                {m.dipole_description()}
             </p>
         </header>
 
@@ -92,7 +93,7 @@
                     
                     <div>
                         <label for="freq" class="mb-2 block text-xs font-bold tracking-widest text-slate-400 uppercase">
-                            Target Frequency
+                            {m.input_target_freq()}
                         </label>
                         <div class="relative">
                             <input
@@ -124,10 +125,10 @@
                     <div>
                         <div class="mb-2 flex items-center justify-between">
                             <label for="vf" class="text-xs font-bold tracking-widest text-slate-400 uppercase">
-                                Velocity Factor
+                                {m.input_vf()}
                             </label>
                             <span class="text-[10px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                                Default: 0.95
+                                {m.label_default({ val: 0.95 })}
                             </span>
                         </div>
                         
@@ -143,8 +144,8 @@
                             />
                         </div>
                         <p class="mt-2 text-xs text-slate-500 leading-relaxed">
-                            <strong>0.95</strong> for insulated wire. <br/>
-                            <strong>0.96-0.98</strong> for bare copper/tubing.
+                            <strong>0.95</strong> {m.vf_help_insulated()} <br/>
+                            <strong>0.96-0.98</strong> {m.vf_help_bare()}
                         </p>
                     </div>
                 </div>
@@ -152,7 +153,7 @@
                 <div class="rounded-3xl bg-slate-900 p-8 text-white shadow-2xl ring-1 ring-white/10">
                     <div class="mb-8">
                         <p class="mb-1 text-sm font-bold tracking-widest text-slate-400 uppercase">
-                            Total Length (L)
+                            {m.result_total_len()}
                         </p>
                         <div class="flex items-baseline gap-2">
                             <span class="text-5xl font-black tracking-tighter text-blue-400">{fmt(totalLengthFeet)}</span>
@@ -165,7 +166,7 @@
 
                     <div class="border-t border-slate-800 pt-8">
                         <p class="mb-1 text-sm font-bold tracking-widest text-slate-400 uppercase">
-                            Per Leg (L/2)
+                            {m.result_leg_len()}
                         </p>
                         <div class="flex items-baseline gap-2">
                             <span class="text-4xl font-bold tracking-tighter text-white">{fmt(legLengthFeet)}</span>
@@ -180,8 +181,8 @@
 
             <div class="lg:col-span-8 flex flex-col gap-4">
                 <div class="flex items-center justify-between">
-                     <h2 class="text-sm font-bold tracking-widest text-slate-400 uppercase">Visual Model</h2>
-                     <span class="text-xs text-slate-400">Scroll to zoom • Drag to pan</span>
+                     <h2 class="text-sm font-bold tracking-widest text-slate-400 uppercase">{m.visual_title()}</h2>
+                     <span class="text-xs text-slate-400">{m.visual_instructions()}</span>
                 </div>
                
                 <div class="relative w-full overflow-hidden rounded-2xl shadow-lg ring-1 ring-slate-900/5">

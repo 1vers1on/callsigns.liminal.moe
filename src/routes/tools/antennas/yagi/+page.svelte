@@ -3,6 +3,8 @@
     import Footer from '$lib/components/footer.svelte';
     import AntennaViewer from '$lib/components/AntennaVisualizer.svelte';
     import type { AntennaDesign, AntennaElement } from '$lib/components/AntennaVisualizer.svelte';
+    import * as m from '$lib/paraglide/messages.js';
+
 
     let frequency = $state(144.200);
     let directorCount = $state(1);
@@ -26,16 +28,16 @@
             id: 'boom',
             type: 'boom',
             points: [{x: 0, y: -reflectorSpacing}, {x: 0, y: directorSpacing * directorCount}],
-            group: 'Boom'
+            group: m.group_boom()
         });
 
         elements.push({
             id: 'reflector',
             type: 'wire',
             points: [{x: -reflectorLen/2, y: -reflectorSpacing}, {x: reflectorLen/2, y: -reflectorSpacing}],
-            label: 'Reflector',
+            label: m.element_reflector(),
             showDimensions: true,
-            group: 'Reflector'
+            group: m.group_reflector()
         });
 
         const gap = 0.02;
@@ -44,16 +46,16 @@
             type: 'wire',
             points: [{x: -drivenLen/2, y: 0}, {x: -gap, y: 0}],
             isDriven: true,
-            group: 'Radiator'
+            group: m.group_radiator()
         });
         elements.push({
             id: 'driven-r',
             type: 'wire',
             points: [{x: gap, y: 0}, {x: drivenLen/2, y: 0}],
             isDriven: true,
-            label: 'Driven Element',
+            label: m.element_driven(),
             showDimensions: true,
-            group: 'Radiator'
+            group: m.group_radiator()
         });
 
         for(let i = 1; i <= directorCount; i++) {
@@ -63,14 +65,14 @@
                 id: `dir-${i}`,
                 type: 'wire',
                 points: [{x: -taperedLen/2, y: yPos}, {x: taperedLen/2, y: yPos}],
-                label: `Director ${i}`,
+                label: m.element_director({ n: i }),
                 showDimensions: true,
-                group: 'Director'
+                group: m.group_director()
             });
         }
 
         return {
-            name: `${directorCount + 2} Element Yagi`,
+            name: m.design_name_yagi({ n: directorCount + 2 }),
             frequency: frequency,
             feedGap: 0.05,
             elements
@@ -90,25 +92,25 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
             </div>
-            <h1 class="text-4xl font-black tracking-tight text-slate-900">Yagi-Uda</h1>
-            <p class="mt-2 text-lg font-medium text-slate-500">Directional beam antenna design.</p>
+            <h1 class="text-4xl font-black tracking-tight text-slate-900">{m.yagi_title()}</h1>
+            <p class="mt-2 text-lg font-medium text-slate-500">{m.yagi_description()}</p>
         </header>
 
         <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
             <div class="space-y-6 lg:col-span-4">
                 <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
                     <div>
-                        <label class="mb-2 block text-xs font-bold tracking-widest text-slate-400 uppercase">Frequency (MHz)</label>
+                        <label class="mb-2 block text-xs font-bold tracking-widest text-slate-400 uppercase">{m.input_frequency()}</label>
                         <input type="number" step="0.001" bind:value={frequency} class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-xl font-bold text-blue-600 outline-none" />
                     </div>
 
                     <div>
-                        <label class="mb-2 block text-xs font-bold tracking-widest text-slate-400 uppercase">Directors: {directorCount}</label>
+                        <label class="mb-2 block text-xs font-bold tracking-widest text-slate-400 uppercase">{m.input_directors({ n: directorCount })}</label>
                         <input type="range" min="1" max="10" bind:value={directorCount} class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
                     </div>
 
                     <div>
-                        <label class="mb-2 block text-xs font-bold tracking-widest text-slate-400 uppercase">Velocity Factor</label>
+                        <label class="mb-2 block text-xs font-bold tracking-widest text-slate-400 uppercase">{m.input_velocity_factor()}</label>
                         <input type="number" step="0.01" bind:value={velocityFactor} class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 font-mono text-lg font-bold" />
                     </div>
                 </div>
@@ -116,15 +118,15 @@
                 <div class="rounded-3xl bg-slate-900 p-8 text-white shadow-2xl">
                     <div class="space-y-4">
                         <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase">Reflector Length</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase">{m.result_reflector_len()}</p>
                             <p class="text-2xl font-bold">{fmt(reflectorLen)} m</p>
                         </div>
                         <div class="border-t border-slate-800 pt-4">
-                            <p class="text-xs font-bold text-blue-400 uppercase">Driven Element</p>
+                            <p class="text-xs font-bold text-blue-400 uppercase">{m.result_driven_len()}</p>
                             <p class="text-2xl font-bold">{fmt(drivenLen)} m</p>
                         </div>
                         <div class="border-t border-slate-800 pt-4">
-                            <p class="text-xs font-bold text-slate-400 uppercase">Director Length</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase">{m.result_director_len()}</p>
                             <p class="text-2xl font-bold">{fmt(directorLen)} m</p>
                         </div>
                     </div>

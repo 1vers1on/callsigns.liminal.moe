@@ -32,6 +32,11 @@
         boomThickness?: number;
         gridOpacity?: number;
     };
+
+    type UserMeasurement = {
+        p1: Point;
+        p2: Point;
+    };
 </script>
 
 <script lang="ts">
@@ -74,7 +79,9 @@
         originY: '#22c55e',
         dimLine: '#64748b',
         dimText: '#e2e8f0',
-        background: '#020617'
+        background: '#020617',
+        snapPoint: '#06b6d4',
+        userDim: '#22d3ee'
     };
 
     let container: HTMLDivElement | undefined = $state();
@@ -90,6 +97,11 @@
     let lastPos = { x: 0, y: 0 };
     let hoveredElementId: string | null = $state(null);
     let hasFittedInitial = false;
+
+    let isMeasureMode = $state(false);
+    let activeSnapPoint: Point | null = $state(null);
+    let measureStartPoint: Point | null = $state(null);
+    let userMeasurements: UserMeasurement[] = $state([]);
 
     const CONNECTION_EPSILON = 0.05; 
 
@@ -327,6 +339,7 @@
     
     $effect(() => {
         computedDesign; viewState; hoveredElementId; config; width; heightPx;
+        activeSnapPoint; measureStartPoint; userMeasurements
         render();
     });
 
@@ -358,6 +371,25 @@
 
         if (config.showLabels || config.showDimensions) {
             computedDesign.elements.forEach(el => drawElementOverlays(ctx!, el));
+        }
+
+        drawUserMeasurements(ctx);
+
+        if (isMeasureMode) {
+            if (activeSnapPoint) {
+                const s = worldToScreen(activeSnapPoint.x, activeSnapPoint.y);
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, 5, 0, Math.PI*2);
+                ctx.fillStyle = COLORS.snapPoint;
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            if (measureStartPoint && activeSnapPoint) {
+                drawDimensionsScreenSpace(ctx, measureStartPoint, activeSnapPoint, true);
+            }
         }
 
         ctx.restore();
@@ -479,7 +511,7 @@
         ctx.restore();
     }
 
-    function drawDimensionsScreenSpace(context: CanvasRenderingContext2D, p1: Point, p2: Point) {
+    function drawDimensionsScreenSpace(context: CanvasRenderingContext2D, p1: Point, p2: Point, isUser = false) {
         const s1 = worldToScreen(p1.x, p1.y);
         const s2 = worldToScreen(p2.x, p2.y);
         
@@ -487,7 +519,7 @@
         const dy = s2.y - s1.y;
         const screenLen = Math.hypot(dx, dy);
         
-        if (screenLen < 20) return;
+        if (screenLen < 5) return;
 
         const offsetPx = 20; 
         const nx = -dy / screenLen;
@@ -499,8 +531,8 @@
 
         const worldLen = Math.hypot(p2.x - p1.x, p2.y - p1.y);
 
-        context.strokeStyle = COLORS.dimLine;
-        context.lineWidth = 1;
+        context.strokeStyle = isUser ? COLORS.userDim : COLORS.dimLine;
+        context.lineWidth = isUser ? 1.5 : 1;
 
         context.setLineDash([2, 2]);
         context.beginPath();
@@ -509,7 +541,6 @@
         context.stroke();
         context.setLineDash([]);
 
-        context.strokeStyle = COLORS.grid;
         context.beginPath();
         context.moveTo(d1.x, d1.y); context.lineTo(d2.x, d2.y);
         context.stroke();
@@ -520,7 +551,7 @@
         const textRot = (angle > Math.PI/2 || angle < -Math.PI/2) ? angle + Math.PI : angle;
         context.rotate(textRot);
 
-        context.fillStyle = COLORS.dimText;
+        context.fillStyle = isUser ? COLORS.userDim : COLORS.dimText;
         context.textAlign = 'center';
         context.textBaseline = 'bottom';
         context.font = `bold 11px monospace`;
@@ -534,6 +565,18 @@
         context.fillText(txt, 0, -2);
 
         context.restore();
+    }
+
+    function drawUserMeasurements(ctx: CanvasRenderingContext2D) {
+        for (const m of userMeasurements) {
+            drawDimensionsScreenSpace(ctx, m.p1, m.p2, true);
+            
+            const s1 = worldToScreen(m.p1.x, m.p1.y);
+            const s2 = worldToScreen(m.p2.x, m.p2.y);
+            ctx.fillStyle = COLORS.userDim;
+            ctx.beginPath(); ctx.arc(s1.x, s1.y, 2, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(s2.x, s2.y, 2, 0, Math.PI*2); ctx.fill();
+        }
     }
 
     function drawGrid(context: CanvasRenderingContext2D) {
@@ -626,6 +669,36 @@
         return closestId;
     }
 
+    function snapTest(screenX: number, screenY: number): Point | null {
+        const snapThresholdPx = 15;
+        const thresholdWorld = snapThresholdPx / viewState.k;
+        const wp = screenToWorld(screenX, screenY);
+
+        let closestPoint: Point | null = null;
+        let minDistance = thresholdWorld;
+
+        const checkP = (p: Point) => {
+            const d = Math.hypot(p.x - wp.x, p.y - wp.y);
+            if (d < minDistance) {
+                minDistance = d;
+                closestPoint = p;
+            }
+        };
+
+        for (const el of computedDesign.elements) {
+            if (el.type === 'wire' || el.type === 'boom') {
+                checkP(el.points[0]);
+                checkP(el.points[1]);
+            } else if (el.type === 'curve') {
+                checkP(el.points[0]);
+                checkP(el.points[2]);
+            } else if (el.type === 'loop') {
+                checkP(el.points[0]);
+            }
+        }
+        return closestPoint;
+    }
+
     export function fitToScreen() {
         if (!bounds || !width || !heightPx) return;
         const padding = 40;
@@ -652,6 +725,15 @@
         applyZoom(cx, cy, factor);
     }
 
+    function toggleMeasureMode() {
+        isMeasureMode = !isMeasureMode;
+        measureStartPoint = null;
+        activeSnapPoint = null;
+        if (!isMeasureMode) {
+            userMeasurements = [];
+        }
+    }
+
     function handleWheel(e: WheelEvent) {
         e.preventDefault();
         const rect = container?.getBoundingClientRect();
@@ -666,8 +748,12 @@
 
         applyZoom(mouseX, mouseY, factor);
         
-        const hit = hitTest(mouseX, mouseY);
-        if (hit !== hoveredElementId) hoveredElementId = hit;
+        if (isMeasureMode) {
+             activeSnapPoint = snapTest(mouseX, mouseY);
+        } else {
+             const hit = hitTest(mouseX, mouseY);
+             if (hit !== hoveredElementId) hoveredElementId = hit;
+        }
     }
 
     function applyZoom(cx: number, cy: number, factor: number) {
@@ -681,13 +767,17 @@
 
     function handleMouseDown(e: MouseEvent) {
         if (e.button !== 0) return;
-        isDragging = true;
-        lastPos = { x: e.clientX, y: e.clientY };
+        if (!isMeasureMode) {
+            isDragging = true;
+            lastPos = { x: e.clientX, y: e.clientY };
+        }
     }
 
     function handleMouseMove(e: MouseEvent) {
         const rect = container?.getBoundingClientRect();
         if (!rect) return;
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
 
         if (isDragging) {
             const dx = e.clientX - lastPos.x;
@@ -696,10 +786,20 @@
             viewState.y += dy;
             lastPos = { x: e.clientX, y: e.clientY };
         } else {
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-            const hit = hitTest(mouseX, mouseY);
-            if (hit !== hoveredElementId) hoveredElementId = hit;
+            if (isMeasureMode) {
+                const snapped = snapTest(mouseX, mouseY);
+                if (snapped) {
+                    activeSnapPoint = snapped;
+                    container!.style.cursor = 'crosshair';
+                } else {
+                    activeSnapPoint = screenToWorld(mouseX, mouseY);
+                    container!.style.cursor = 'crosshair';
+                }
+            } else {
+                const hit = hitTest(mouseX, mouseY);
+                if (hit !== hoveredElementId) hoveredElementId = hit;
+                container!.style.cursor = hit ? 'pointer' : 'grab';
+            }
         }
     }
 
@@ -707,6 +807,22 @@
 
     function handleClick(e: MouseEvent) {
         if (isDragging) return;
+        
+        if (isMeasureMode) {
+            if (!activeSnapPoint) return;
+
+            if (!measureStartPoint) {
+                measureStartPoint = activeSnapPoint;
+            } else {
+                userMeasurements = [...userMeasurements, {
+                    p1: measureStartPoint,
+                    p2: activeSnapPoint
+                }];
+                measureStartPoint = null;
+            }
+            return;
+        }
+
         const rect = container?.getBoundingClientRect();
         if (!rect) return;
         const hit = hitTest(e.clientX - rect.left, e.clientY - rect.top);
@@ -719,7 +835,7 @@
 <div
     bind:this={container}
     class="group relative w-full overflow-hidden rounded-xl border border-slate-700 select-none {backgroundColor}"
-    style="height: {height}; cursor: {isDragging ? 'grabbing' : hoveredElementId ? 'pointer' : 'grab'};"
+    style="height: {height};"
     onwheel={handleWheel}
     onmousedown={handleMouseDown}
     onclick={handleClick}
@@ -733,8 +849,13 @@
                 <div class="font-mono text-xs text-blue-400">{design.frequency} MHz</div>
             {/if}
             <div class="mt-1 font-mono text-[10px] text-slate-500">Zoom: {viewState.k.toFixed(2)}x</div>
+            {#if isMeasureMode}
+                <div class="mt-1 font-bold text-cyan-400 animate-pulse">
+                    {measureStartPoint ? 'Select 2nd Point' : 'Select 1st Point'}
+                </div>
+            {/if}
         </div>
-        {#if hoveredInfo}
+        {#if hoveredInfo && !isMeasureMode}
             <div class="rounded border border-slate-600 bg-slate-800/90 p-2 text-xs text-white shadow-lg backdrop-blur">
                 <div class="mb-1 font-bold text-amber-400">{hoveredInfo.title}</div>
                 {#each hoveredInfo.details as detail}
@@ -751,8 +872,17 @@
         <button onclick={() => fitToScreen()} class="border-b border-slate-700 p-2 text-slate-300 hover:bg-slate-700 active:bg-slate-600" title="Fit All">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
         </button>
-        <button onclick={() => zoom(0.8)} class="p-2 text-slate-300 hover:bg-slate-700 active:bg-slate-600" title="Zoom Out">
+        <button onclick={() => zoom(0.8)} class="border-b border-slate-700 p-2 text-slate-300 hover:bg-slate-700 active:bg-slate-600" title="Zoom Out">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+        <button 
+            onclick={toggleMeasureMode} 
+            class="p-2 transition-colors {isMeasureMode ? 'bg-cyan-900 text-cyan-400' : 'text-slate-300 hover:bg-slate-700 active:bg-slate-600'}" 
+            title={isMeasureMode ? "Clear Measurement" : "Measure Distance"}
+        >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 12h20M2 12v6M22 12v6M6 12v4M10 12v4M14 12v4M18 12v4" />
+            </svg>
         </button>
     </div>
 

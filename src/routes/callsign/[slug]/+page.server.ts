@@ -2,8 +2,9 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import type { OperatorProfile } from '$lib/types';
 import { prisma } from '$lib/server/prisma';
+import "dotenv/config";
 
-const OPENCAGE_KEY = '39052460b04d4f28843dad2675d8f17f';
+const OPENCAGE_KEY = process.env.OPENCAGE_KEY || '';
 
 function latLonToGrid(lat: number, lon: number): string {
     const adjLat = lat + 90;

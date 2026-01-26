@@ -25,8 +25,36 @@
         }
     );
 
-    const modes = ['SSB', 'CW', 'FT8', 'FT4', 'PSK31', 'RTTY', 'FM', 'AM', 'SSTV', 'JT65', 'JS8'];
+    const modes = [
+        'SSB',
+        'CW',
+        'FT8',
+        'FT4',
+        'PSK31',
+        'RTTY',
+        'FM',
+        'AM',
+        'SSTV',
+        'JT65',
+        'JS8',
+        'OLIVIA',
+        'MFSK',
+        'WSPR',
+        'Q65',
+        'JT9',
+        'PACTOR',
+        'VARA',
+        'FST4',
+        'FST4W',
+        'DOMINO',
+        'THOR',
+        'CONTESTIA',
+        'ATV'
+    ];
+
     const bands = [
+        '2200m',
+        '630m',
         '160m',
         '80m',
         '60m',
@@ -38,26 +66,47 @@
         '12m',
         '10m',
         '6m',
+        '4m',
         '2m',
-        '70cm'
+        '1.25m',
+        '70cm',
+        '33cm',
+        '23cm'
+    ];
+
+    const bandPlan = [
+        { name: '2200m', lower: 0.1357, upper: 0.1378 },
+        { name: '630m', lower: 0.472, upper: 0.479 },
+        { name: '160m', lower: 1.8, upper: 2.0 },
+        { name: '80m', lower: 3.5, upper: 4.0 },
+        { name: '60m', lower: 5.3305, upper: 5.405 },
+        { name: '40m', lower: 7.0, upper: 7.3 },
+        { name: '30m', lower: 10.1, upper: 10.15 },
+        { name: '20m', lower: 14.0, upper: 14.35 },
+        { name: '17m', lower: 18.068, upper: 18.168 },
+        { name: '15m', lower: 21.0, upper: 21.45 },
+        { name: '12m', lower: 24.89, upper: 24.99 },
+        { name: '10m', lower: 28.0, upper: 29.7 },
+        { name: '6m', lower: 50.0, upper: 54.0 },
+        { name: '2m', lower: 144.0, upper: 148.0 },
+        { name: '1.25m', lower: 222.0, upper: 225.0 },
+        { name: '70cm', lower: 420.0, upper: 450.0 },
+        { name: '33cm', lower: 902.0, upper: 928.0 },
+        { name: '23cm', lower: 1240.0, upper: 1300.0 }
     ];
 
     function updateBandFromFrequency() {
         if (!qsoData.frequency) return;
-        const freq = qsoData.frequency;
-        if (freq >= 1.8 && freq <= 2.0) qsoData.band = '160m';
-        else if (freq >= 3.5 && freq <= 4.0) qsoData.band = '80m';
-        else if (freq >= 5.3 && freq <= 5.4) qsoData.band = '60m';
-        else if (freq >= 7.0 && freq <= 7.3) qsoData.band = '40m';
-        else if (freq >= 10.1 && freq <= 10.15) qsoData.band = '30m';
-        else if (freq >= 14.0 && freq <= 14.35) qsoData.band = '20m';
-        else if (freq >= 18.068 && freq <= 18.168) qsoData.band = '17m';
-        else if (freq >= 21.0 && freq <= 21.45) qsoData.band = '15m';
-        else if (freq >= 24.89 && freq <= 24.99) qsoData.band = '12m';
-        else if (freq >= 28.0 && freq <= 29.7) qsoData.band = '10m';
-        else if (freq >= 50.0 && freq <= 54.0) qsoData.band = '6m';
-        else if (freq >= 144.0 && freq <= 148.0) qsoData.band = '2m';
-        else if (freq >= 420.0 && freq <= 450.0) qsoData.band = '70cm';
+
+        const freq = parseFloat(qsoData.frequency);
+
+        const band = bandPlan.find((b) => freq >= b.lower && freq <= b.upper);
+
+        if (band) {
+            qsoData.band = band.name;
+        } else {
+            qsoData.band = '';
+        }
     }
 
     function handleSubmit() {
@@ -81,7 +130,7 @@
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
+                    Authorization: `Bearer ${accessToken}`
                 },
                 body: JSON.stringify(body)
             })
@@ -103,7 +152,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
+                    Authorization: `Bearer ${accessToken}`
                 },
                 body: JSON.stringify(qsoData)
             })
