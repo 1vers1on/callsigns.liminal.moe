@@ -10,17 +10,6 @@
             callsign: 'KR4FNZ',
             links: { github: 'https://github.com/1vers1on', website: 'https://liminal.moe' }
         }
-        // {
-        //     name: 'Jane Doe',
-        //     role: 'UI Designer & Beta Tester',
-        //     callsign: 'K1ABC',
-        //     links: { github: '#', website: '#' }
-        // },
-        // {
-        //     name: 'Open Source Community',
-        //     role: 'Data & API Support',
-        //     links: { github: 'https://github.com' }
-        // }
     ];
 
     function getLinkIcon(type: string) {

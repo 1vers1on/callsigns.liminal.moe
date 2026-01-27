@@ -7,7 +7,7 @@
 
     let { data }: PageProps = $props();
 
-    let currentUserCallsign = 'KR4FNZ';
+    let currentUserCallsign = data.userCallsign as string | undefined;
 
     let operator = $state({ ...data.operator });
 
@@ -25,6 +25,7 @@
 
     let isOwner = $derived(currentUserCallsign === operator.callsign);
     let isEditing = $state(false);
+    let isSaving = $state(false);
 
     let mapUrl = $derived.by(() => {
         const addr = operator.address;
@@ -53,12 +54,36 @@
             : ''
     );
 
-    function toggleEdit() {
+    async function toggleEdit() {
         if (isEditing) {
-            console.log('Saving changes...', operator);
-            // Add your API save call here
+            isSaving = true;
+            
+            try {
+                const response = await fetch(`/api/v1/callsign/${operator.callsign}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(operator)
+                });
+
+                if (!response.ok) {
+                    throw new Error('API update failed');
+                }
+
+                const result = await response.json();
+                console.log('Save successful:', result);
+                
+                isEditing = false;
+            } catch (error) {
+                console.error('Error saving profile:', error);
+                alert('Failed to save changes. Please try again.');
+            } finally {
+                isSaving = false;
+            }
+        } else {
+            isEditing = true;
         }
-        isEditing = !isEditing;
     }
 
     async function shareProfile() {

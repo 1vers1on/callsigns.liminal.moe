@@ -60,6 +60,10 @@ export type CallsignMinAggregateOutputType = {
   updatedAt: Date | null
   userId: number | null
   views: number | null
+  nickname: string | null
+  bio: string | null
+  birthday: Date | null
+  gender: string | null
 }
 
 export type CallsignMaxAggregateOutputType = {
@@ -82,6 +86,10 @@ export type CallsignMaxAggregateOutputType = {
   updatedAt: Date | null
   userId: number | null
   views: number | null
+  nickname: string | null
+  bio: string | null
+  birthday: Date | null
+  gender: string | null
 }
 
 export type CallsignCountAggregateOutputType = {
@@ -104,6 +112,10 @@ export type CallsignCountAggregateOutputType = {
   updatedAt: number
   userId: number
   views: number
+  nickname: number
+  bio: number
+  birthday: number
+  gender: number
   _all: number
 }
 
@@ -142,6 +154,10 @@ export type CallsignMinAggregateInputType = {
   updatedAt?: true
   userId?: true
   views?: true
+  nickname?: true
+  bio?: true
+  birthday?: true
+  gender?: true
 }
 
 export type CallsignMaxAggregateInputType = {
@@ -164,6 +180,10 @@ export type CallsignMaxAggregateInputType = {
   updatedAt?: true
   userId?: true
   views?: true
+  nickname?: true
+  bio?: true
+  birthday?: true
+  gender?: true
 }
 
 export type CallsignCountAggregateInputType = {
@@ -186,6 +206,10 @@ export type CallsignCountAggregateInputType = {
   updatedAt?: true
   userId?: true
   views?: true
+  nickname?: true
+  bio?: true
+  birthday?: true
+  gender?: true
   _all?: true
 }
 
@@ -295,6 +319,10 @@ export type CallsignGroupByOutputType = {
   updatedAt: Date
   userId: number | null
   views: number
+  nickname: string | null
+  bio: string | null
+  birthday: Date | null
+  gender: string | null
   _count: CallsignCountAggregateOutputType | null
   _avg: CallsignAvgAggregateOutputType | null
   _sum: CallsignSumAggregateOutputType | null
@@ -340,6 +368,10 @@ export type CallsignWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Callsign"> | Date | string
   userId?: Prisma.IntNullableFilter<"Callsign"> | number | null
   views?: Prisma.IntFilter<"Callsign"> | number
+  nickname?: Prisma.StringNullableFilter<"Callsign"> | string | null
+  bio?: Prisma.StringNullableFilter<"Callsign"> | string | null
+  birthday?: Prisma.DateTimeNullableFilter<"Callsign"> | Date | string | null
+  gender?: Prisma.StringNullableFilter<"Callsign"> | string | null
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   qsos?: Prisma.QSOListRelationFilter
 }
@@ -364,6 +396,10 @@ export type CallsignOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
   views?: Prisma.SortOrder
+  nickname?: Prisma.SortOrderInput | Prisma.SortOrder
+  bio?: Prisma.SortOrderInput | Prisma.SortOrder
+  birthday?: Prisma.SortOrderInput | Prisma.SortOrder
+  gender?: Prisma.SortOrderInput | Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   qsos?: Prisma.QSOOrderByRelationAggregateInput
   _relevance?: Prisma.CallsignOrderByRelevanceInput
@@ -392,6 +428,10 @@ export type CallsignWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Callsign"> | Date | string
   userId?: Prisma.IntNullableFilter<"Callsign"> | number | null
   views?: Prisma.IntFilter<"Callsign"> | number
+  nickname?: Prisma.StringNullableFilter<"Callsign"> | string | null
+  bio?: Prisma.StringNullableFilter<"Callsign"> | string | null
+  birthday?: Prisma.DateTimeNullableFilter<"Callsign"> | Date | string | null
+  gender?: Prisma.StringNullableFilter<"Callsign"> | string | null
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   qsos?: Prisma.QSOListRelationFilter
 }, "id" | "callsign">
@@ -416,6 +456,10 @@ export type CallsignOrderByWithAggregationInput = {
   updatedAt?: Prisma.SortOrder
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
   views?: Prisma.SortOrder
+  nickname?: Prisma.SortOrderInput | Prisma.SortOrder
+  bio?: Prisma.SortOrderInput | Prisma.SortOrder
+  birthday?: Prisma.SortOrderInput | Prisma.SortOrder
+  gender?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.CallsignCountOrderByAggregateInput
   _avg?: Prisma.CallsignAvgOrderByAggregateInput
   _max?: Prisma.CallsignMaxOrderByAggregateInput
@@ -446,6 +490,10 @@ export type CallsignScalarWhereWithAggregatesInput = {
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Callsign"> | Date | string
   userId?: Prisma.IntNullableWithAggregatesFilter<"Callsign"> | number | null
   views?: Prisma.IntWithAggregatesFilter<"Callsign"> | number
+  nickname?: Prisma.StringNullableWithAggregatesFilter<"Callsign"> | string | null
+  bio?: Prisma.StringNullableWithAggregatesFilter<"Callsign"> | string | null
+  birthday?: Prisma.DateTimeNullableWithAggregatesFilter<"Callsign"> | Date | string | null
+  gender?: Prisma.StringNullableWithAggregatesFilter<"Callsign"> | string | null
 }
 
 export type CallsignCreateInput = {
@@ -466,6 +514,10 @@ export type CallsignCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   views?: number
+  nickname?: string | null
+  bio?: string | null
+  birthday?: Date | string | null
+  gender?: string | null
   user?: Prisma.UserCreateNestedOneWithoutCallsignsInput
   qsos?: Prisma.QSOCreateNestedManyWithoutCallsignInput
 }
@@ -490,6 +542,10 @@ export type CallsignUncheckedCreateInput = {
   updatedAt?: Date | string
   userId?: number | null
   views?: number
+  nickname?: string | null
+  bio?: string | null
+  birthday?: Date | string | null
+  gender?: string | null
   qsos?: Prisma.QSOUncheckedCreateNestedManyWithoutCallsignInput
 }
 
@@ -511,6 +567,10 @@ export type CallsignUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   views?: Prisma.IntFieldUpdateOperationsInput | number
+  nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  gender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   user?: Prisma.UserUpdateOneWithoutCallsignsNestedInput
   qsos?: Prisma.QSOUpdateManyWithoutCallsignNestedInput
 }
@@ -535,6 +595,10 @@ export type CallsignUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   views?: Prisma.IntFieldUpdateOperationsInput | number
+  nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  gender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qsos?: Prisma.QSOUncheckedUpdateManyWithoutCallsignNestedInput
 }
 
@@ -558,6 +622,10 @@ export type CallsignCreateManyInput = {
   updatedAt?: Date | string
   userId?: number | null
   views?: number
+  nickname?: string | null
+  bio?: string | null
+  birthday?: Date | string | null
+  gender?: string | null
 }
 
 export type CallsignUpdateManyMutationInput = {
@@ -578,6 +646,10 @@ export type CallsignUpdateManyMutationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   views?: Prisma.IntFieldUpdateOperationsInput | number
+  nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  gender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type CallsignUncheckedUpdateManyInput = {
@@ -600,6 +672,10 @@ export type CallsignUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   views?: Prisma.IntFieldUpdateOperationsInput | number
+  nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  gender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type CallsignListRelationFilter = {
@@ -638,6 +714,10 @@ export type CallsignCountOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   views?: Prisma.SortOrder
+  nickname?: Prisma.SortOrder
+  bio?: Prisma.SortOrder
+  birthday?: Prisma.SortOrder
+  gender?: Prisma.SortOrder
 }
 
 export type CallsignAvgOrderByAggregateInput = {
@@ -667,6 +747,10 @@ export type CallsignMaxOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   views?: Prisma.SortOrder
+  nickname?: Prisma.SortOrder
+  bio?: Prisma.SortOrder
+  birthday?: Prisma.SortOrder
+  gender?: Prisma.SortOrder
 }
 
 export type CallsignMinOrderByAggregateInput = {
@@ -689,6 +773,10 @@ export type CallsignMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   views?: Prisma.SortOrder
+  nickname?: Prisma.SortOrder
+  bio?: Prisma.SortOrder
+  birthday?: Prisma.SortOrder
+  gender?: Prisma.SortOrder
 }
 
 export type CallsignSumOrderByAggregateInput = {
@@ -789,6 +877,10 @@ export type CallsignCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   views?: number
+  nickname?: string | null
+  bio?: string | null
+  birthday?: Date | string | null
+  gender?: string | null
   qsos?: Prisma.QSOCreateNestedManyWithoutCallsignInput
 }
 
@@ -811,6 +903,10 @@ export type CallsignUncheckedCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   views?: number
+  nickname?: string | null
+  bio?: string | null
+  birthday?: Date | string | null
+  gender?: string | null
   qsos?: Prisma.QSOUncheckedCreateNestedManyWithoutCallsignInput
 }
 
@@ -863,6 +959,10 @@ export type CallsignScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Callsign"> | Date | string
   userId?: Prisma.IntNullableFilter<"Callsign"> | number | null
   views?: Prisma.IntFilter<"Callsign"> | number
+  nickname?: Prisma.StringNullableFilter<"Callsign"> | string | null
+  bio?: Prisma.StringNullableFilter<"Callsign"> | string | null
+  birthday?: Prisma.DateTimeNullableFilter<"Callsign"> | Date | string | null
+  gender?: Prisma.StringNullableFilter<"Callsign"> | string | null
 }
 
 export type CallsignCreateWithoutQsosInput = {
@@ -883,6 +983,10 @@ export type CallsignCreateWithoutQsosInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   views?: number
+  nickname?: string | null
+  bio?: string | null
+  birthday?: Date | string | null
+  gender?: string | null
   user?: Prisma.UserCreateNestedOneWithoutCallsignsInput
 }
 
@@ -906,6 +1010,10 @@ export type CallsignUncheckedCreateWithoutQsosInput = {
   updatedAt?: Date | string
   userId?: number | null
   views?: number
+  nickname?: string | null
+  bio?: string | null
+  birthday?: Date | string | null
+  gender?: string | null
 }
 
 export type CallsignCreateOrConnectWithoutQsosInput = {
@@ -942,6 +1050,10 @@ export type CallsignUpdateWithoutQsosInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   views?: Prisma.IntFieldUpdateOperationsInput | number
+  nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  gender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   user?: Prisma.UserUpdateOneWithoutCallsignsNestedInput
 }
 
@@ -965,6 +1077,10 @@ export type CallsignUncheckedUpdateWithoutQsosInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   views?: Prisma.IntFieldUpdateOperationsInput | number
+  nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  gender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type CallsignCreateManyUserInput = {
@@ -986,6 +1102,10 @@ export type CallsignCreateManyUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   views?: number
+  nickname?: string | null
+  bio?: string | null
+  birthday?: Date | string | null
+  gender?: string | null
 }
 
 export type CallsignUpdateWithoutUserInput = {
@@ -1006,6 +1126,10 @@ export type CallsignUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   views?: Prisma.IntFieldUpdateOperationsInput | number
+  nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  gender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qsos?: Prisma.QSOUpdateManyWithoutCallsignNestedInput
 }
 
@@ -1028,6 +1152,10 @@ export type CallsignUncheckedUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   views?: Prisma.IntFieldUpdateOperationsInput | number
+  nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  gender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   qsos?: Prisma.QSOUncheckedUpdateManyWithoutCallsignNestedInput
 }
 
@@ -1050,6 +1178,10 @@ export type CallsignUncheckedUpdateManyWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   views?: Prisma.IntFieldUpdateOperationsInput | number
+  nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  gender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -1103,6 +1235,10 @@ export type CallsignSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   updatedAt?: boolean
   userId?: boolean
   views?: boolean
+  nickname?: boolean
+  bio?: boolean
+  birthday?: boolean
+  gender?: boolean
   user?: boolean | Prisma.Callsign$userArgs<ExtArgs>
   qsos?: boolean | Prisma.Callsign$qsosArgs<ExtArgs>
   _count?: boolean | Prisma.CallsignCountOutputTypeDefaultArgs<ExtArgs>
@@ -1130,9 +1266,13 @@ export type CallsignSelectScalar = {
   updatedAt?: boolean
   userId?: boolean
   views?: boolean
+  nickname?: boolean
+  bio?: boolean
+  birthday?: boolean
+  gender?: boolean
 }
 
-export type CallsignOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "callsign" | "operatorName" | "licenseClass" | "licenseType" | "status" | "addressLine1" | "addressLine2" | "city" | "stateProvince" | "postalCode" | "country" | "ituZone" | "regulatoryBody" | "gridSquare" | "createdAt" | "updatedAt" | "userId" | "views", ExtArgs["result"]["callsign"]>
+export type CallsignOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "callsign" | "operatorName" | "licenseClass" | "licenseType" | "status" | "addressLine1" | "addressLine2" | "city" | "stateProvince" | "postalCode" | "country" | "ituZone" | "regulatoryBody" | "gridSquare" | "createdAt" | "updatedAt" | "userId" | "views" | "nickname" | "bio" | "birthday" | "gender", ExtArgs["result"]["callsign"]>
 export type CallsignInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Callsign$userArgs<ExtArgs>
   qsos?: boolean | Prisma.Callsign$qsosArgs<ExtArgs>
@@ -1165,6 +1305,10 @@ export type $CallsignPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     updatedAt: Date
     userId: number | null
     views: number
+    nickname: string | null
+    bio: string | null
+    birthday: Date | null
+    gender: string | null
   }, ExtArgs["result"]["callsign"]>
   composites: {}
 }
@@ -1555,6 +1699,10 @@ export interface CallsignFieldRefs {
   readonly updatedAt: Prisma.FieldRef<"Callsign", 'DateTime'>
   readonly userId: Prisma.FieldRef<"Callsign", 'Int'>
   readonly views: Prisma.FieldRef<"Callsign", 'Int'>
+  readonly nickname: Prisma.FieldRef<"Callsign", 'String'>
+  readonly bio: Prisma.FieldRef<"Callsign", 'String'>
+  readonly birthday: Prisma.FieldRef<"Callsign", 'DateTime'>
+  readonly gender: Prisma.FieldRef<"Callsign", 'String'>
 }
     
 

@@ -1,6 +1,6 @@
 import { prisma } from './prisma';
 
-async function main() {
+export async function main() {
     const result = await prisma.user.deleteMany({
         where: {
             emailVerified: false,
@@ -12,7 +12,3 @@ async function main() {
 
     console.log(`Deleted ${result.count} unverified users.`);
 }
-
-main()
-    .catch(console.error)
-    .finally(() => prisma.$disconnect());

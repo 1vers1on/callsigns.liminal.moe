@@ -79,6 +79,11 @@ model Callsign {
     user        User?          @relation(fields: [userId], references: [id])
     views       Int            @default(0)
 
+    nickname  String?
+    bio       String? @db.Text
+    birthday  DateTime?
+    gender    String?
+
     qsos        QSO[]          @relation("CallsignToQSO")
     
     @@index([userId])

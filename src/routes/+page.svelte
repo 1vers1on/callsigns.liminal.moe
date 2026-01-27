@@ -14,31 +14,31 @@
 
     let recentSearches = ['W1AW', 'KR4IYD', 'N0CALL', 'KR4FNZ'];
 
-    const tools = [
+   const tools = [
         {
-            name: 'Distance Calculator',
-            desc: 'Calculate the distance and bearing between two maidenhead grid squares.',
+            name: m.tool_distance_name(),
+            desc: m.tool_distance_desc(),
             icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z',
             link: '/tools/distance',
             color: 'text-blue-600',
             bg: 'bg-blue-50'
         },
         {
-            name: 'Yagi Maker',
-            desc: 'Calculate the dimensions for a Yagi antenna based on frequency and design parameters.',
+            name: m.tool_yagi_name(),
+            desc: m.tool_yagi_desc(),
             icon: 'M2 12h18M5 7v10M12 5v14M19 7v10',
             link: '/tools/antennas/yagi',
             color: 'text-indigo-600',
             bg: 'bg-indigo-50'
         },
         {
-            name: 'Dipole Maker',
-            desc: 'Calculate the dimensions for a dipole antenna based on frequency and design parameters.',
+            name: m.tool_dipole_name(),
+            desc: m.tool_dipole_desc(),
             icon: 'M3 10h8m2 0h8 M11 10a1 1 0 102 0 1 1 0 10-2 0 M12 11v7',
             link: '/tools/antennas/dipole',
             color: 'text-purple-600',
             bg: 'bg-purple-50'
-        },
+        }
     ];
 
     let hfOverall = $derived(() => {

@@ -135,7 +135,11 @@ export const CallsignScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   userId: 'userId',
-  views: 'views'
+  views: 'views',
+  nickname: 'nickname',
+  bio: 'bio',
+  birthday: 'birthday',
+  gender: 'gender'
 } as const
 
 export type CallsignScalarFieldEnum = (typeof CallsignScalarFieldEnum)[keyof typeof CallsignScalarFieldEnum]
@@ -216,7 +220,10 @@ export const CallsignOrderByRelevanceFieldEnum = {
   postalCode: 'postalCode',
   country: 'country',
   regulatoryBody: 'regulatoryBody',
-  gridSquare: 'gridSquare'
+  gridSquare: 'gridSquare',
+  nickname: 'nickname',
+  bio: 'bio',
+  gender: 'gender'
 } as const
 
 export type CallsignOrderByRelevanceFieldEnum = (typeof CallsignOrderByRelevanceFieldEnum)[keyof typeof CallsignOrderByRelevanceFieldEnum]

@@ -3,7 +3,9 @@
 declare global {
     namespace App {
         // interface Error {}
-        // interface Locals {}
+        interface Locals {
+            rateLimit?: RateLimitResult;
+        }
         // interface PageData {}
         // interface PageState {}
         // interface Platform {}

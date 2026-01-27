@@ -34,14 +34,14 @@
                     {m.footer_resources_heading()}
                 </h3>
                 <ul class="mt-4 space-y-2">
-                    <!-- <li>
+                    <li>
                         <a
                             href="/about"
                             class="text-sm text-slate-600 transition-colors hover:text-blue-600"
                         >
                             {m.footer_link_about()}
                         </a>
-                    </li> -->
+                    </li>
                     <li>
                         <a
                             href="/credits"
@@ -60,7 +60,7 @@
                 <ul class="mt-4 space-y-2">
                     <li>
                         <a
-                            href="https://github.com"
+                            href="https://github.com/1vers1on/callsigns.liminal.moe"
                             class="text-sm text-slate-600 transition-colors hover:text-blue-600"
                         >
                             GitHub

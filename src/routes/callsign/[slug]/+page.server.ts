@@ -3,6 +3,7 @@ import type { PageServerLoad } from './$types';
 import type { OperatorProfile } from '$lib/types';
 import { prisma } from '$lib/server/prisma';
 import "dotenv/config";
+import jwt from 'jsonwebtoken';
 
 const OPENCAGE_KEY = process.env.OPENCAGE_KEY || '';
 
@@ -31,8 +32,9 @@ function latLonToGrid(lat: number, lon: number): string {
     );
 }
 
-export const load: PageServerLoad = async ({ params, fetch }) => {
+export const load: PageServerLoad = async ({ params, fetch, cookies }) => {
     const callsign = params.slug;
+    const userCallsign = (jwt.decode(cookies.get('accessToken') || '') as { callsign?: string } | null)?.callsign;
 
     let record = await prisma.callsign.findUnique({ where: { callsign } });
     if (!record) throw error(404, 'Not found');
@@ -118,8 +120,8 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         birthday: undefined,
         gender: undefined,
         age: undefined,
-        bio: undefined
+        bio: undefined,
     };
 
-    return { operator };
+    return { operator, userCallsign };
 };

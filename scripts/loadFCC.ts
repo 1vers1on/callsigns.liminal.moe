@@ -1,8 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { ArgumentParser } from 'argparse';
+import * as os from 'os';
+import axios from 'axios';
+import AdmZip from 'adm-zip';
 import { prisma } from './prisma';
 import * as cliProgress from 'cli-progress';
+
+const FCC_URL = 'https://data.fcc.gov/download/pub/uls/complete/l_amat.zip';
+const TEMP_DIR = path.join(os.tmpdir(), 'fcc-import');
 
 interface AMDataRecord {
     recordType: string; // char(2)
@@ -425,42 +430,80 @@ async function loadToDatabase(data: CombinedCallsignData[]) {
     }
 }
 
-async function main() {
-    const parser = new ArgumentParser({
-        description: 'FCC Callsign Data Combiner and Database Loader'
-    });
-    parser.add_argument('-a', '--amfile', { help: 'Path to the AM file', required: true });
-    parser.add_argument('-e', '--enfile', { help: 'Path to the EN file', required: true });
-    parser.add_argument('-d', '--hdfile', { help: 'Path to the HD file', required: true });
-    parser.add_argument('--db', {
-        help: 'Load data into database (requires DATABASE_URL env var)',
-        action: 'store_true'
-    });
+export async function processFCCDataFiles(
+    amFilePath: string,
+    enFilePath: string,
+    hdFilePath: string
+): Promise<CombinedCallsignData[]> {
+    const amRecords = loadAMData(amFilePath);
+    const enRecords = loadENData(enFilePath);
+    const hdRecords = loadHDData(hdFilePath);
 
-    const args = parser.parse_args();
+    const combinedData = combineFCCData(amRecords, enRecords, hdRecords);
+    await loadToDatabase(combinedData);
+
+    return combinedData;
+}
+
+export async function main() {
+    console.log('--- FCC Amateur Radio Data Import ---');
 
     try {
-        console.log('Loading FCC data files...');
-        const amRecords = loadAMData(args.amfile);
-        const enRecords = loadENData(args.enfile);
-        const hdRecords = loadHDData(args.hdfile);
-
-        console.log(`Loaded ${amRecords.length} AM records`);
-        console.log(`Loaded ${enRecords.length} EN records`);
-        console.log(`Loaded ${hdRecords.length} HD records`);
-
-        console.log('Combining data...');
-        const combinedData = combineFCCData(amRecords, enRecords, hdRecords);
-        console.log(`Combined ${combinedData.length} callsign records`);
-
-        if (args.db) {
-            console.log('Loading data into Prisma database...');
-            await loadToDatabase(combinedData);
+        if (!fs.existsSync(TEMP_DIR)) {
+            fs.mkdirSync(TEMP_DIR, { recursive: true });
         }
+
+        const zipFilePath = path.join(TEMP_DIR, 'l_amat.zip');
+
+        console.log(`Downloading database from FCC...`);
+        const response = await axios({
+            url: FCC_URL,
+            method: 'GET',
+            responseType: 'stream',
+        });
+
+        const writer = fs.createWriteStream(zipFilePath);
+        
+        const totalLength = response.headers['content-length'];
+        const downloadBar = new cliProgress.SingleBar({
+            format: 'Download | {bar} | {percentage}% | {value}/{total} Bytes',
+        }, cliProgress.Presets.shades_classic);
+        
+        if (totalLength) downloadBar.start(parseInt(totalLength), 0);
+
+        response.data.on('data', (chunk: Buffer) => {
+            downloadBar.increment(chunk.length);
+        });
+
+        response.data.pipe(writer);
+
+        await new Promise((resolve, reject) => {
+            writer.on('finish', () => resolve(undefined));
+            writer.on('error', (err) => reject(err));
+        });
+        downloadBar.stop();
+
+        console.log('Extracting AM.dat, EN.dat, and HD.dat...');
+        const zip = new AdmZip(zipFilePath);
+        const targetFiles = ['AM.dat', 'EN.dat', 'HD.dat'];
+        
+        targetFiles.forEach(file => {
+            zip.extractEntryTo(file, TEMP_DIR, false, true);
+        });
+
+        console.log('Processing data and syncing to database...');
+        await processFCCDataFiles(
+            path.join(TEMP_DIR, 'AM.dat'),
+            path.join(TEMP_DIR, 'EN.dat'),
+            path.join(TEMP_DIR, 'HD.dat')
+        );
+
+        console.log('Cleaning up temporary files...');
+        fs.rmSync(TEMP_DIR, { recursive: true, force: true });
+
+        console.log('Done!');
     } catch (error) {
-        console.error('Error processing FCC data:', error);
+        console.error('An error occurred during the process:', error);
         process.exit(1);
     }
 }
-
-main();

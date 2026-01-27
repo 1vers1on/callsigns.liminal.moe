@@ -211,5 +211,17 @@
     "element_left": "Left Element",
     "element_right": "Right Element",
     "group_feed": "Feed",
-    "group_radiator": "Radiator"
+    "group_radiator": "Radiator",
+    "tool_distance_name": "Distance Calculator",
+    "tool_distance_desc": "Calculate the distance and bearing between two maidenhead grid squares.",
+    "tool_yagi_name": "Yagi Maker",
+    "tool_yagi_desc": "Calculate the dimensions for a Yagi antenna based on frequency and design parameters.",
+    "tool_dipole_name": "Dipole Maker",
+    "tool_dipole_desc": "Calculate the dimensions for a dipole antenna based on frequency and design parameters.",
+    "error_title_404": "Page Not Found",
+    "error_title_generic": "Signal Lost",
+    "error_desc_404": "We couldn't tune into the page you were looking for. It may have moved or doesn't exist.",
+    "error_desc_generic": "We are experiencing strong interference. Please try again later.",
+    "error_home_button": "Return to Home",
+    "error_code_label": "Error Code"
 }
