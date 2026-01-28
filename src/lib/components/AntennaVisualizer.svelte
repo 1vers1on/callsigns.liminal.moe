@@ -103,6 +103,11 @@
     let measureStartPoint: Point | null = $state(null);
     let userMeasurements: UserMeasurement[] = $state([]);
 
+    let lastTouchDist = 0;
+    let touchStartPos = { x: 0, y: 0 };
+    let touchStartTime = 0;
+    let isPinching = false;
+
     const CONNECTION_EPSILON = 0.05; 
 
     function arePointsTouching(p1: Point, p2: Point): boolean {
@@ -806,27 +811,131 @@
     function handleMouseUp() { isDragging = false; }
 
     function handleClick(e: MouseEvent) {
+        processClickOrTap(e.clientX, e.clientY);
+    }
+
+    function processClickOrTap(clientX: number, clientY: number) {
         if (isDragging) return;
         
+        const rect = container?.getBoundingClientRect();
+        if (!rect) return;
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
         if (isMeasureMode) {
-            if (!activeSnapPoint) return;
+            if (!activeSnapPoint) {
+                 const snapped = snapTest(x, y);
+                 activeSnapPoint = snapped || screenToWorld(x, y);
+            }
 
             if (!measureStartPoint) {
                 measureStartPoint = activeSnapPoint;
             } else {
                 userMeasurements = [...userMeasurements, {
                     p1: measureStartPoint,
-                    p2: activeSnapPoint
+                    p2: activeSnapPoint!
                 }];
                 measureStartPoint = null;
             }
             return;
         }
 
+        const hit = hitTest(x, y);
+        if (hit) onElementClick(hit);
+    }
+
+    // --- Touch Handlers (Mobile) ---
+
+    function getTouchDist(e: TouchEvent) {
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+    }
+
+    function getTouchCenter(e: TouchEvent, rect: DOMRect) {
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        return {
+            x: ((t1.clientX + t2.clientX) / 2) - rect.left,
+            y: ((t1.clientY + t2.clientY) / 2) - rect.top
+        };
+    }
+
+    function handleTouchStart(e: TouchEvent) {
+        if (e.cancelable) e.preventDefault();
+        
+        if (e.touches.length === 1) {
+            const touch = e.touches[0];
+            touchStartPos = { x: touch.clientX, y: touch.clientY };
+            lastPos = { x: touch.clientX, y: touch.clientY };
+            touchStartTime = Date.now();
+            isDragging = true;
+            isPinching = false;
+
+            const rect = container?.getBoundingClientRect();
+            if(rect) {
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                if(isMeasureMode) activeSnapPoint = snapTest(x, y) || screenToWorld(x, y);
+            }
+
+        } else if (e.touches.length === 2) {
+            isPinching = true;
+            isDragging = false;
+            lastTouchDist = getTouchDist(e);
+        }
+    }
+
+    function handleTouchMove(e: TouchEvent) {
+        if (e.cancelable) e.preventDefault();
         const rect = container?.getBoundingClientRect();
         if (!rect) return;
-        const hit = hitTest(e.clientX - rect.left, e.clientY - rect.top);
-        if (hit) onElementClick(hit);
+
+        if (isPinching && e.touches.length === 2) {
+            const newDist = getTouchDist(e);
+            const center = getTouchCenter(e, rect);
+            
+            if (lastTouchDist > 0) {
+                const factor = newDist / lastTouchDist;
+                applyZoom(center.x, center.y, factor);
+            }
+            lastTouchDist = newDist;
+        } else if (e.touches.length === 1 && !isPinching) {
+            const touch = e.touches[0];
+            const dx = touch.clientX - lastPos.x;
+            const dy = touch.clientY - lastPos.y;
+            
+            viewState.x += dx;
+            viewState.y += dy;
+            lastPos = { x: touch.clientX, y: touch.clientY };
+
+            if(isMeasureMode) {
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                activeSnapPoint = snapTest(x, y) || screenToWorld(x, y);
+            }
+        }
+    }
+
+    function handleTouchEnd(e: TouchEvent) {
+        if (e.cancelable) e.preventDefault();
+        
+        if (!isPinching && e.changedTouches.length === 1 && e.touches.length === 0) {
+             const touch = e.changedTouches[0];
+             const dx = touch.clientX - touchStartPos.x;
+             const dy = touch.clientY - touchStartPos.y;
+             const moveDist = Math.hypot(dx, dy);
+             const timeDiff = Date.now() - touchStartTime;
+
+             if (moveDist < 10 && timeDiff < 300) {
+                 processClickOrTap(touch.clientX, touch.clientY);
+             }
+        }
+
+        if (e.touches.length === 0) {
+            isDragging = false;
+            isPinching = false;
+        }
     }
 </script>
 
@@ -834,11 +943,14 @@
 
 <div
     bind:this={container}
-    class="group relative w-full overflow-hidden rounded-xl border border-slate-700 select-none {backgroundColor}"
-    style="height: {height};"
+    class="group relative w-full overflow-hidden rounded-xl border border-slate-700 select-none {backgroundColor} touch-none"
+    style="height: {height}; touch-action: none;"
     onwheel={handleWheel}
     onmousedown={handleMouseDown}
     onclick={handleClick}
+    ontouchstart={handleTouchStart}
+    ontouchmove={handleTouchMove}
+    ontouchend={handleTouchEnd}
     role="application"
     aria-label="Antenna Viewer"
 >
@@ -889,9 +1001,12 @@
     {#if scaleBar}
         <div class="pointer-events-none absolute right-4 bottom-4 z-20 flex flex-col items-end">
             <div class="mb-1 h-2 border-r-2 border-b-2 border-l-2 border-slate-400" style="width: {scaleBar.pixelWidth}px"></div>
-            <span class="rounded bg-slate-900/50 px-1 font-mono text-[10px] text-slate-400">{scaleBar.label} units</span>
+            <span class="rounded bg-slate-900/50 px-1 font-mono text-[10px] text-slate-400">{scaleBar.label}</span>
         </div>
     {/if}
 
-    <canvas bind:this={canvas} class="block h-full w-full" style="width: 100%; height: 100%;"></canvas>
+    <canvas
+        bind:this={canvas}
+        class="absolute top-0 left-0 h-full w-full"
+    ></canvas>
 </div>
