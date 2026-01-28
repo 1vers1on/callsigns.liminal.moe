@@ -1,5 +1,9 @@
 {
 	"files.associations": {
 		"*.css": "tailwindcss"
+	},
+	"svelte.plugin.svelte.compilerWarnings": {
+		"a11y_no_noninteractive_element_interactions": "ignore",
+		"a11y-no-static-element-interactions": "ignore"
 	}
 }
