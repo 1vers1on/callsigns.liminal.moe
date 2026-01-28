@@ -839,6 +839,7 @@ export const CallsignScalarFieldEnum = {
   updatedAt: 'updatedAt',
   userId: 'userId',
   views: 'views',
+  avatarUrl: 'avatarUrl',
   nickname: 'nickname',
   bio: 'bio',
   birthday: 'birthday',
@@ -924,6 +925,7 @@ export const CallsignOrderByRelevanceFieldEnum = {
   country: 'country',
   regulatoryBody: 'regulatoryBody',
   gridSquare: 'gridSquare',
+  avatarUrl: 'avatarUrl',
   nickname: 'nickname',
   bio: 'bio',
   gender: 'gender'

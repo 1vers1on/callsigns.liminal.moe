@@ -21,6 +21,8 @@ export interface OperatorProfile {
         licenseNum?: string;
     };
 
+    avatarUrl?: string;
+
     nickname?: string;
     birthday?: string;
     gender?: string;

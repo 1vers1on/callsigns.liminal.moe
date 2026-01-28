@@ -4,6 +4,7 @@
     let currentYear = new Date().getFullYear();
 </script>
 
+<div class="h-20"></div>
 <footer class="mt-auto border-t border-slate-200 bg-white">
     <div class="mx-auto max-w-4xl px-4 py-12 sm:px-6">
         <div class="grid grid-cols-1 gap-8 md:grid-cols-3">

@@ -1,6 +1,5 @@
 <script lang="ts">
-    import Header from '$lib/components/header.svelte';
-    import Footer from '$lib/components/footer.svelte';
+    import ToolShell from '$lib/components/ToolShell.svelte';
     import AntennaViewer from '$lib/components/AntennaVisualizer.svelte';
     import type { AntennaDesign, AntennaElement } from '$lib/components/AntennaVisualizer.svelte';
     import * as m from '$lib/paraglide/messages.js';
@@ -82,73 +81,68 @@
     const fmt = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 3, minimumFractionDigits: 3 });
 </script>
 
-<div class="min-h-screen bg-slate-50 pb-20">
-    <Header />
+<ToolShell>
+    <header class="mb-10 text-center">
+        <div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg">
+            <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+        </div>
+        <h1 class="text-4xl font-black tracking-tight text-slate-900">{m.yagi_title()}</h1>
+        <p class="mt-2 text-lg font-medium text-slate-500">{m.yagi_description()}</p>
+    </header>
 
-    <main class="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
-        <header class="mb-10 text-center">
-            <div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg">
-                <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-            </div>
-            <h1 class="text-4xl font-black tracking-tight text-slate-900">{m.yagi_title()}</h1>
-            <p class="mt-2 text-lg font-medium text-slate-500">{m.yagi_description()}</p>
-        </header>
-
-        <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
-            <div class="space-y-6 lg:col-span-4">
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
-                    <div>
-                        <label class="mb-2 block text-xs font-bold tracking-widest text-slate-400 uppercase">{m.input_frequency()}</label>
-                        <input type="number" step="0.001" bind:value={frequency} class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-xl font-bold text-blue-600 outline-none" />
-                    </div>
-
-                    <div>
-                        <label class="mb-2 block text-xs font-bold tracking-widest text-slate-400 uppercase">{m.input_directors({ n: directorCount })}</label>
-                        <input type="range" min="1" max="10" bind:value={directorCount} class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
-                    </div>
-
-                    <div>
-                        <label class="mb-2 block text-xs font-bold tracking-widest text-slate-400 uppercase">{m.input_velocity_factor()}</label>
-                        <input type="number" step="0.01" bind:value={velocityFactor} class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 font-mono text-lg font-bold" />
-                    </div>
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        <div class="space-y-6 lg:col-span-4">
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
+                <div>
+                    <label for="freq" class="mb-2 block text-xs font-bold tracking-widest text-slate-400 uppercase">{m.input_frequency()}</label>
+                    <input id="freq" type="number" step="0.001" bind:value={frequency} class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-xl font-bold text-blue-600 outline-none" />
                 </div>
 
-                <div class="rounded-3xl bg-slate-900 p-8 text-white shadow-2xl">
-                    <div class="space-y-4">
-                        <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase">{m.result_reflector_len()}</p>
-                            <p class="text-2xl font-bold">{fmt(reflectorLen)} m</p>
-                        </div>
-                        <div class="border-t border-slate-800 pt-4">
-                            <p class="text-xs font-bold text-blue-400 uppercase">{m.result_driven_len()}</p>
-                            <p class="text-2xl font-bold">{fmt(drivenLen)} m</p>
-                        </div>
-                        <div class="border-t border-slate-800 pt-4">
-                            <p class="text-xs font-bold text-slate-400 uppercase">{m.result_director_len()}</p>
-                            <p class="text-2xl font-bold">{fmt(directorLen)} m</p>
-                        </div>
-                    </div>
+                <div>
+                    <label for="directors" class="mb-2 block text-xs font-bold tracking-widest text-slate-400 uppercase">{m.input_directors({ n: directorCount })}</label>
+                    <input id="directors" type="range" min="1" max="10" bind:value={directorCount} class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                </div>
+
+                <div>
+                    <label for="vfactor" class="mb-2 block text-xs font-bold tracking-widest text-slate-400 uppercase">{m.input_velocity_factor()}</label>
+                    <input id="vfactor" type="number" step="0.01" bind:value={velocityFactor} class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 font-mono text-lg font-bold" />
                 </div>
             </div>
 
-            <div class="lg:col-span-8">
-                <div class="relative w-full overflow-hidden rounded-2xl shadow-lg ring-1 ring-slate-900/5 bg-slate-950">
-                    <AntennaViewer 
-                        design={design} 
-                        height="600px" 
-                        options={{
-                            showDimensions: true,
-                            showGrid: true,
-                            showLabels: true,
-                            wireThickness: 3,
-                            gridOpacity: 0.05
-                        }}
-                    />
+            <div class="rounded-3xl bg-slate-900 p-8 text-white shadow-2xl">
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase">{m.result_reflector_len()}</p>
+                        <p class="text-2xl font-bold">{fmt(reflectorLen)} m</p>
+                    </div>
+                    <div class="border-t border-slate-800 pt-4">
+                        <p class="text-xs font-bold text-blue-400 uppercase">{m.result_driven_len()}</p>
+                        <p class="text-2xl font-bold">{fmt(drivenLen)} m</p>
+                    </div>
+                    <div class="border-t border-slate-800 pt-4">
+                        <p class="text-xs font-bold text-slate-400 uppercase">{m.result_director_len()}</p>
+                        <p class="text-2xl font-bold">{fmt(directorLen)} m</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </main>
-    <Footer />
-</div>
+
+        <div class="lg:col-span-8">
+            <div class="relative w-full overflow-hidden rounded-2xl shadow-lg ring-1 ring-slate-900/5 bg-slate-950">
+                <AntennaViewer 
+                    design={design} 
+                    height="600px" 
+                    options={{
+                        showDimensions: true,
+                        showGrid: true,
+                        showLabels: true,
+                        wireThickness: 3,
+                        gridOpacity: 0.05
+                    }}
+                />
+            </div>
+        </div>
+    </div>
+</ToolShell>
