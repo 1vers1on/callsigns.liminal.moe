@@ -185,9 +185,8 @@
                 <div class="flex justify-center">
                     <Turnstile
                         theme="light"
-                        siteKey="1x00000000000000000000AA"
+                        siteKey="0x4AAAAAACOLKKakXcahTIh2"
                         on:callback={(e) => {
-                            console.log('Turnstile token:', e.detail.token);
                             turnstileToken = e.detail.token;
                         }}
                     />
