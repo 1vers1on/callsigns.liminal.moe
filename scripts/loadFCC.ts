@@ -5,6 +5,7 @@ import axios from 'axios';
 import AdmZip from 'adm-zip';
 import { prisma } from './prisma';
 import * as cliProgress from 'cli-progress';
+import { fileURLToPath } from 'url';
 
 const FCC_URL = 'https://data.fcc.gov/download/pub/uls/complete/l_amat.zip';
 const TEMP_DIR = path.join(os.tmpdir(), 'fcc-import');
@@ -508,4 +509,7 @@ export async function main() {
     }
 }
 
-await main();
+const isMain = process.argv[1] === fileURLToPath(import.meta.url);
+if (isMain) {
+    await main();
+}
