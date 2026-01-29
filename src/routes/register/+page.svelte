@@ -12,7 +12,6 @@
     let password = $state('');
     let confirmPassword = $state('');
     let isLoading = $state(false);
-    let turnstileToken = $state('');
 
     let isCallsignValid = $derived(callsign.length > 0 ? validateHamCallsign(callsign) : null);
     let isPasswordLongEnough = $derived(password.length >= 6);
@@ -25,7 +24,6 @@
             isPasswordLongEnough &&
             passwordsMatch &&
             acceptedTerms &&
-            turnstileToken.length > 0 &&
             !isLoading
     );
 
