@@ -16,15 +16,51 @@ async function authenticateRequest(request: Request) {
     return payload.user;
 }
 
-export async function GET({ request }) {
+export async function GET({ url, request }) {
     const user = await authenticateRequest(request);
+
+    const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 100); 
+    const offset = parseInt(url.searchParams.get('offset') || '0');
+    
+    const contactCallsign = url.searchParams.get('contactCallsign');
+    const mode = url.searchParams.get('mode');
+    const band = url.searchParams.get('band');
+    const targetUserId = url.searchParams.get('userId');
+
+    const queryUserId = targetUserId ? parseInt(targetUserId) : user.id;
+    const isOwner = queryUserId === user.id;
+
+    const where: any = {
+        userId: queryUserId,
+    };
+
+    if (!isOwner) {
+        where.private = false;
+    }
+
+    if (contactCallsign) {
+        where.contactCallsign = { contains: contactCallsign.toUpperCase() };
+    }
+    
+    if (mode) where.mode = mode;
+    if (band) where.band = band;
 
     try {
         const qsos = await prisma.qSO.findMany({
-            where: { userId: user.id },
-            orderBy: { timestamp: 'desc' }
+            where,
+            orderBy: { timestamp: 'desc' },
+            take: limit,
+            skip: offset,
+            include: {
+                callsign: {
+                    select: { callsign: true, operatorName: true }
+                }
+            }
         });
-        return json(qsos);
+
+        const total = await prisma.qSO.count({ where });
+
+        return json({ qsos, total, limit, offset });
     } catch (err) {
         console.error('Error fetching QSOs:', err);
         throw error(500, 'Failed to fetch logbook');

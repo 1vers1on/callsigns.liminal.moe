@@ -50,7 +50,6 @@ async function uploadToR2(base64Data: string, callsign: string): Promise<string 
     }
 }
 
-// ... existing mapping functions ...
 function mapStatusToDb(status?: string) {
     switch (status?.toLowerCase()) {
         case 'active': return 'ACTIVE';

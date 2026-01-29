@@ -2,11 +2,9 @@ generator client {
     provider = "prisma-client"
     output   = "../generated/prisma"
 }
-
 datasource db {
     provider = "mysql"
 }
-
 model RefreshToken {
     id        Int      @id @default(autoincrement())
     token     String   @unique
@@ -20,7 +18,6 @@ model RefreshToken {
 
     @@index([userId])
 }
-
 model User {
     id        Int        @id @default(autoincrement())
     email     String     @unique
@@ -36,7 +33,6 @@ model User {
     apiKeys   ApiKey[]
     refreshTokens RefreshToken[]
 }
-
 model ApiKey {
     id        Int      @id @default(autoincrement())
     keyHash   String   @unique
@@ -49,8 +45,6 @@ model ApiKey {
 
     @@index([keyPrefix])
 }
-
-
 model Callsign {
     id           Int            @id @default(autoincrement())
     callsign     String         @unique
@@ -92,7 +86,6 @@ model Callsign {
     @@index([country])
     @@index([gridSquare])
 }
-
 model QSO {
     id          Int        @id @default(autoincrement())
     userId      Int
@@ -111,13 +104,14 @@ model QSO {
     createdAt   DateTime    @default(now())
     updatedAt   DateTime    @updatedAt
 
+    private     Boolean     @default(false)
+
     callsign    Callsign    @relation("CallsignToQSO", fields: [callsignId], references: [id])
 
     @@index([callsignId])
     @@index([contactCallsign])
     @@index([timestamp])
 }
-
 
 enum CallsignStatus {
     ACTIVE

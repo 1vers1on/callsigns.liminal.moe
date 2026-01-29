@@ -7,7 +7,7 @@ import { checkRateLimit, type RateLimitConfig } from '$lib/server/rateLimit';
 startBackgroundUpdate(15);
 
 const rateLimitConfig: RateLimitConfig = {
-    maxAttempts: 100, // Allow 50 requests
+    maxAttempts: 100, // Allow 100 requests
     windowMs: 60 * 1000, // Per 60 seconds (1 minute)
     blockDurationMs: 2 * 60 * 1000 // Block for 2 minutes if limit exceeded
 };
