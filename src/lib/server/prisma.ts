@@ -7,8 +7,9 @@ declare global {
 }
 
 const createPrismaClient = () => {
+    console.log('process.env.DATABASE_URL: ', process.env.DATABASE_URL);
     const adapter = new PrismaMariaDb(process.env.DATABASE_URL!);
-
+    
     return new PrismaClient({
         adapter,
         log: ['query', 'info', 'warn', 'error']
