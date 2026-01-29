@@ -4,7 +4,6 @@
     import { enhance } from '$app/forms';
     import type { ActionData } from './$types';
     import { m } from '$lib/paraglide/messages.js';
-    import { Turnstile } from 'svelte-turnstile';
 
     let { form }: { form: ActionData } = $props();
 
@@ -181,18 +180,6 @@
                         </a>
                     </label>
                 </div>
-
-                <div class="flex justify-center">
-                    <Turnstile
-                        theme="light"
-                        siteKey="0x4AAAAAACOLKKakXcahTIh2"
-                        on:callback={(e) => {
-                            turnstileToken = e.detail.token;
-                        }}
-                    />
-                </div>
-
-                <input type="hidden" name="cf-turnstile-response" value={turnstileToken} />
 
                 <button
                     type="submit"
